@@ -244,6 +244,10 @@ if path_acc:
 
             print(f'finished processing {New_fileName}')
 # 3. Jupyter Notebook
+
+## 3.1 Daily_test_script.ipynb
+This Jupyter notebook generates visualizations from the output of the Python scripts.
+
 for user in subject_ids:
         # try:
             directory_fft = f'/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/dreem/{user}/fft'
@@ -388,9 +392,6 @@ for user in subject_ids:
                         plt.show()
                         plt.close()
 
-
-## 3.1 Daily_test_script.ipynb
-This Jupyter notebook generates visualizations from the output of the Python scripts.
 
 # Usage
 
