@@ -244,43 +244,6 @@ if path_acc:
 
             print(f'finished processing {New_fileName}')
 # 3. Jupyter Notebook
-import mne
-from scipy.integrate import simps
-from scipy.interpolate import interp1d
-from scipy.signal import butter, filtfilt,savgol_filter,find_peaks,welch
-from scipy.ndimage import median_filter
-from scipy.ndimage import gaussian_filter
-import warnings
-from matplotlib.backends.backend_pdf import PdfPages
-
-warnings.filterwarnings("ignore")
-
-sfreq = 250
-winlen = sfreq * 4
-overlap =sfreq * 2
-freq_res = 0.25
-
-hzL = np.linspace(0,  sfreq/ 2, int(winlen / 2) + 1)  # frequencies for every window
-
-channels = ['EEG F7-O1', 'EEG F8-O2','EEG F8-O1', 'EEG F7-O2']
-stages = df_dreem_all
-
-#Select channels
-
-delta = [0.75, 4]
-theta = [4.5, 8]
-alpha = [8, 12]
-beta = [13, 20]
-allfreq = [0, 30]
-
-deltaidx = np.searchsorted(hzL, delta)
-thetaidx = np.searchsorted(hzL, theta)
-alphaidx = np.searchsorted(hzL, alpha)
-betaidx = np.searchsorted(hzL, beta)
-allfreqidx = np.searchsorted(hzL, allfreq)
-
-
-
 for user in subject_ids:
         # try:
             directory_fft = f'/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/dreem/{user}/fft'
@@ -349,22 +312,6 @@ for user in subject_ids:
 
                             else:
                                 power_filt.loc[nan, i] = np.interp(np.flatnonzero(nan), np.flatnonzero(~nan), power_filt.loc[~nan, i])
-
-
-
-            #             sleep_onset_epoch = staging_epochs[(staging_scores != 0) & (~np.isnan(staging_scores))].min()  # Get the sleep onset epoch
-
-            #             final_awakening = staging_epochs[(staging_scores != 0) & (~np.isnan(staging_scores))].max() 
-
-            #             # Select epochs scored as N3 after sleep onset
-            #             sleep_epochs = staging_epochs[(staging_epochs >= sleep_onset_epoch) & (staging_epochs <= final_awakening)]
-
-
-
-            #             if (np.sum((hypno['Noisy_epoch'][sleep_epochs]))  > len(sleep_epochs) * 0.2): #| np.sum((np.isnan(power_all.iloc[sleep_epochs]).sum(axis=1) > 16 )) > len(sleep_epochs) * 0.3: # take out if more than 2 frequancies are noisy
-            #                 noise += 1
-            #                 print(noise)
-            #     with PdfPages('output_figures.pdf') as pdf:
 
 
                         # Compute the absolute power by approximating the area under the curve
