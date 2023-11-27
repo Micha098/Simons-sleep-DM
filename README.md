@@ -15,7 +15,7 @@ This repository contains scripts and files for managing data related to a sleep 
 #SBATCH --output=ceph/emp_zcy_%a.out
 #SBATCH --mem 20GB
 
-# Loop over specified dates
+### Loop over specified dates
 for target_date in {2023-11-17,2023-11-18,2023-11-19,2023-11-20,2023-11-21,2023-11-22,2023-11-23,2023-11-24,2023-11-25,2023-11-26,2023-11-27,2023-11-28}; do
     # Call your Python script and pass the subject ID and date as arguments
     sbatch slurm_files/init_conda.sh
