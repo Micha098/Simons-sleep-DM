@@ -76,8 +76,7 @@ subject_id = pd.read_csv('/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/subje
 participant_data_path = '/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/empatica/aws_data/1/1/participant_data/' # path to the folder that contains folder for each date
 output_folder = f'/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/empatica/raw_data/{subject_id[i]}/acc/' #output folder
 
-
-# accelerometer data 
+#accelerometer data 
 dfs = pd.DataFrame()
 dates = sorted(os.listdir(participant_data_path), reverse=True) #all date-folders available 
 #dates.remove('.DS_Store')
@@ -266,7 +265,7 @@ hzL = np.linspace(0,  sfreq/ 2, int(winlen / 2) + 1)  # frequencies for every wi
 channels = ['EEG F7-O1', 'EEG F8-O2','EEG F8-O1', 'EEG F7-O2']
 stages = df_dreem_all
 
-# Select channels
+#Select channels
 
 delta = [0.75, 4]
 theta = [4.5, 8]
