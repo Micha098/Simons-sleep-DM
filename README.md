@@ -245,6 +245,203 @@ if path_acc:
 
             print(f'finished processing {New_fileName}')
 # 3. Jupyter Notebook
+import mne
+from scipy.integrate import simps
+from scipy.interpolate import interp1d
+from scipy.signal import butter, filtfilt,savgol_filter,find_peaks,welch
+from scipy.ndimage import median_filter
+from scipy.ndimage import gaussian_filter
+import warnings
+from matplotlib.backends.backend_pdf import PdfPages
+
+warnings.filterwarnings("ignore")
+
+sfreq = 250
+winlen = sfreq * 4
+overlap =sfreq * 2
+freq_res = 0.25
+
+hzL = np.linspace(0,  sfreq/ 2, int(winlen / 2) + 1)  # frequencies for every window
+
+channels = ['EEG F7-O1', 'EEG F8-O2','EEG F8-O1', 'EEG F7-O2']
+stages = df_dreem_all
+
+# Select channels
+
+delta = [0.75, 4]
+theta = [4.5, 8]
+alpha = [8, 12]
+beta = [13, 20]
+allfreq = [0, 30]
+
+deltaidx = np.searchsorted(hzL, delta)
+thetaidx = np.searchsorted(hzL, theta)
+alphaidx = np.searchsorted(hzL, alpha)
+betaidx = np.searchsorted(hzL, beta)
+allfreqidx = np.searchsorted(hzL, allfreq)
+
+
+
+for user in subject_ids:
+        # try:
+            directory_fft = f'/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/dreem/{user}/fft'
+            directory_noise = f'/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/dreem/{user}/noise'
+            directory_stages= f'/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/dreem/{user}/txt/csv'
+
+
+            for fft in sorted(os.listdir(directory_fft)):
+                    if fft.startswith("fft"):
+
+
+                        date = re.search(r"\d{4}-\d{2}-\d{2}", fft).group()
+                        noisy_epochs_file = f'noise_{user}_{date}.csv'
+                        stages_file = f'dreem_{user}_{date}.csv'
+                        electrode_file = f'bestChan_{user}_{date}.npy'
+                        acc_file = f'df_acc_{user}_{date}.npy'
+                        
+                        stages = pd.read_csv(directory_stages+f'/{stages_file}')
+                        noisy_epochs = pd.read_csv(directory_noise + f'/{noisy_epochs_file}', index_col='Unnamed: 0')
+
+                        # Load FFT file
+                        best_elec = np.load(directory_noise+f'/{electrode_file}')
+                        data = (np.load(directory_fft + f'/{fft}'))
+                        best_elec_indices = best_elec[:, np.newaxis]  # Add a new axis to match the array shape
+
+                        # Use the indices to select the desired channel for each epoch
+                        selected_channels = data[np.arange(len(best_elec)), best_elec_indices.flatten(), :]
+                        fft_data = pd.DataFrame(selected_channels)
+                        # finish epoching accelerometer data
+                        acc = np.load(directory_fft + f'/{acc_file}')
+                        epoch_duration = 30  # seconds
+                        samples_per_epoch = int(sfreq * epoch_duration)
+
+                        # Calculate the total number of epochs
+                        total_epochs = acc.shape[1] // samples_per_epoch
+                        acc = acc[:, :total_epochs * samples_per_epoch]
+                        # Reshape the data into epochs
+                        acc_epoched = acc.reshape((total_epochs, samples_per_epoch))
+                        percentiles = np.percentile(acc_epoched, [5, 95], axis=1)
+
+
+                        power_all = fft_data.iloc[:,allfreqidx[0]:allfreqidx[1]]
+                        # take out noisy epochs
+                        power_all_1 = power_all.copy()
+                        channel1 = pd.DataFrame(data[:,0, :]).iloc[:,allfreqidx[0]:allfreqidx[1]]
+                        channel2 = pd.DataFrame(data[:,1, :]).iloc[:,allfreqidx[0]:allfreqidx[1]]
+                        channel3 = pd.DataFrame(data[:,2, :]).iloc[:,allfreqidx[0]:allfreqidx[1]]
+                        channel4 = pd.DataFrame(data[:,3, :]).iloc[:,allfreqidx[0]:allfreqidx[1]]
+
+                        power_all.loc[noisy_epochs.values] = np.nan
+
+
+                        # std_threshold = 3
+                        # std = np.std(power_all, axis=0)
+                        # power_all[np.abs(power_all - np.mean(power_all)) > std_threshold * std] = np.nan
+                        # power_all[np.abs(power_all) > 600 ] = np.nan
+
+                        power_filt = power_all.copy()
+                        power_nan = np.isnan(power_filt)
+
+                        #intepolate missing values across columns (frequencies)
+                        for i in power_filt.columns:
+                            nan = power_nan.loc[:, i]
+                            if nan.all():  # Check if the whole column is NaN
+                                power_filt.loc[:, i] = 0    
+
+                            else:
+                                power_filt.loc[nan, i] = np.interp(np.flatnonzero(nan), np.flatnonzero(~nan), power_filt.loc[~nan, i])
+
+
+
+            #             sleep_onset_epoch = staging_epochs[(staging_scores != 0) & (~np.isnan(staging_scores))].min()  # Get the sleep onset epoch
+
+            #             final_awakening = staging_epochs[(staging_scores != 0) & (~np.isnan(staging_scores))].max() 
+
+            #             # Select epochs scored as N3 after sleep onset
+            #             sleep_epochs = staging_epochs[(staging_epochs >= sleep_onset_epoch) & (staging_epochs <= final_awakening)]
+
+
+
+            #             if (np.sum((hypno['Noisy_epoch'][sleep_epochs]))  > len(sleep_epochs) * 0.2): #| np.sum((np.isnan(power_all.iloc[sleep_epochs]).sum(axis=1) > 16 )) > len(sleep_epochs) * 0.3: # take out if more than 2 frequancies are noisy
+            #                 noise += 1
+            #                 print(noise)
+            #     with PdfPages('output_figures.pdf') as pdf:
+
+
+                        # Compute the absolute power by approximating the area under the curve
+                        delta_power = pd.DataFrame(simps(power_filt.iloc[:,deltaidx[0]:deltaidx[1]], dx=freq_res))
+                        delta_power_1 = simps(power_all_1.iloc[:,deltaidx[0]:deltaidx[1]], dx=freq_res)
+                        delta_smoothed = gaussian_filter(delta_power, sigma=10, mode='wrap')
+                        
+                        stages['time'] = pd.to_datetime(stages['Time [hh:mm:ss]']) # Convert time to datetime
+                        # resamples epochs to round 30 seconds
+                        stages = stages.set_index(stages['time'])  # Set the time as the index
+                        stages = stages.resample('30S').first() # Change '30T' to your desired time interval
+                        stages.time = pd.to_datetime(stages.index).time
+                        stages.reset_index(inplace=True,drop=True)
+
+                        fig, ax = plt.subplots(figsize=(10, 5))
+
+                        ax.plot(delta_power, label='after interpolation', alpha=0.8)
+                        ax.plot(delta_power_1, label='before interpolation', alpha=0.4)
+                        ax.set_title(f'Delta power: {date} {user}', fontsize=15)
+                        ax.set_xlabel('Time', fontsize=15)
+                        ax.set_ylabel('Average Delta Power', fontsize=15)
+                        ax.set_xlim(-10,len(delta_power))
+                        ax.set_ylim(-30,130)
+                        ax.set_yticks(ax.get_yticks()[2:-3])
+
+                        ax.set_xticklabels(stages.time.iloc[ax.get_xticks()[:-1]])
+
+                        # Plot Dreem Sleep staging on the first y-axis
+                        ax2 = ax.twinx()
+
+                        # Create a second y-axis
+                        ax2.tick_params(axis='y', pad=5)
+                        ax2.plot(-stages['Sleep Stage'].replace({1:2,2:3,3:4,4:1}), label='Dreem Sleep staging', alpha=0.8, lw=2, color='black')
+                        ax2.scatter(stages[np.isnan(stages['Sleep Stage'])].index,stages[np.isnan(stages['Sleep Stage'])]['Sleep Stage'].replace({np.nan:1}), label='Noise',marker = 's', color='red')
+
+                        # Set the y-axis label for the left side
+                        ax2.set_ylabel('Sleep Stage', fontsize=15, loc= 'top')
+                        ax2.set_yticks([0, -1, -2, -3, -4])  # Set y-ticks to match the stages
+                        ax2.set_yticklabels(['Awake', 'Rem ','N1', 'N2', 'Deep' ])
+
+                        lines, labels = ax.get_legend_handles_labels()
+                        lines2, labels2 = ax2.get_legend_handles_labels()
+                        ax2.legend(lines + lines2, labels + labels2, loc='lower left')
+                        # Use 'viridis' colormap with reduced saturation
+                        ax2.set_ylim(-25,2)
+                        ax2.tick_params(axis='y', pad=20)  # Increase the spacing between tick labels and axis
+                        
+                        # Plot accelerometer data
+                        
+                        percentiles = np.percentile(acc_epoched*1e7, [5, 95], axis=1)
+                        ax4 = ax.twinx()
+
+                        ax4.fill_between(range(len(percentiles[0])), percentiles[0], percentiles[1])
+                        ax4.set_ylim(0,14)
+                        ax4.set_yticks([])
+                        ax4.set_ylabel('Accelerometer', fontsize=12, color = 'C0', rotation=0)
+                        ax4.yaxis.set_label_coords(1,0.7)
+
+                        fig, axs = plt.subplots(4, 1, figsize=(12.8, 8))
+                        fig.subplots_adjust(hspace=0.8)
+
+                        ## Plot the spectrograms for each channel
+                        for axi, channel, title in zip(axs, [channel1, channel2, channel3, channel4], ['EEG F7-O1', 'EEG F8-O2', 'EEG F8-O1', 'EEG F7-O2']):
+                            grouped_power = channel.groupby(np.arange(len(channel.columns)) // 4, axis=1).sum()
+                            im = axi.imshow(grouped_power.T, aspect='auto', cmap='inferno_r', origin='lower', extent=(0, len(grouped_power), 0, 30), vmin=0, vmax=30)
+                            axi.set_title(title)
+                            axi.set_ylabel('Frequency (Hz)')
+
+                            plt.colorbar(im,label='Power')
+                            axi.set_ylim(0,30)
+                            #axi.set_xticks([])
+
+                            axi.set_xticklabels(ax.get_xticklabels()[1:])
+                        plt.show()
+                        plt.close()
+
 
 ## 3.1 Daily_test_script.ipynb
 This Jupyter notebook generates visualizations from the output of the Python scripts.
