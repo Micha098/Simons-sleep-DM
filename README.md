@@ -7,7 +7,7 @@ This repository contains scripts and files for managing data related to a sleep 
 
 # 1. Slurm Scripts
 
-## 1.1 Iteration Over Dates (i.e. `slurm_files/slurm_zcy_job.sh`)
+## 1.1 Iteration Over Dates (i.e. `slurm_files/slurm_zcy.sh`)
 
 #!/bin/bash
 #SBATCH --time 1:00:00
