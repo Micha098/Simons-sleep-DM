@@ -15,26 +15,25 @@ This repository holds the codebase, scripts and files for the creation and manag
 In this project we collected data from at-home sleep recordings using an EEG headband (Dreem; Beacon bio-siganls Ltd., a under-the-mattress pressures sensor (Withings ) and a multi-sensor smartwatch (EmbracePlus).
 
 ## Requirements
-This code was tested using:
-1. Windows 10/11
-2. Python 3.9
-3. Pytorch 1.13
-4. CUDA 11.7
+he following environment and libraries are required:
+
+1. Python 3.8 or newer
+2. AWS CLI 
+3. An operating system with support for Python and the above libraries (tested on Linux Ubuntu 20.04 and macOS Catalina)
 
 Other OS/Python distributions are expected to work.
 
 ## Installation
-### Prepare new environment:
-```console
-> conda create -n asdmotion python==3.9
-```
-### Install required packages:
-```console
-> pip install -r requirements.txt
-# Data Management for Sleep Study
+### Prepare new environment Using Conda:
 
-## Overview
-This repository contains scripts and files for managing data related to a sleep study. The data processing involves Slurm scripts for iteration over dates and subjects, Python scripts for data processing, and a Jupyter notebook for generating visualizations.
+This project provides a sleep.yml file which contains all the necessary Python package dependencies.
+> conda env create -f sleep.yml
+
+This command reads the sleep.yml file, sets up the sleep_study environment with all specified packages and their versions.
+
+Activate the environment before running the script with:
+> conda activate sleep
+
 
 # 1. Slurm Scripts
 
