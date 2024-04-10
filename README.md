@@ -1,5 +1,36 @@
 # Simons-sleep-DM
 Data management scripts for Simons Sleep Project 
+
+1. [Abstract](#abstract)
+2. [Requirements](#requirements)
+3. [Installation](#installation)
+4. [Usage](#usage)
+5. [Citation](#citation)
+
+
+## Abstract
+
+This repository holds the codebase, scripts and files for the creation and managment of the Simons Sleep Project pilot repository.
+
+In this project we collected data from at-home sleep recordings using an EEG headband (Dreem; Beacon bio-siganls Ltd., a under-the-mattress pressures sensor (Withings ) and a multi-sensor smartwatch (EmbracePlus).
+
+## Requirements
+This code was tested using:
+1. Windows 10/11
+2. Python 3.9
+3. Pytorch 1.13
+4. CUDA 11.7
+
+Other OS/Python distributions are expected to work.
+
+## Installation
+### Prepare new environment:
+```console
+> conda create -n asdmotion python==3.9
+```
+### Install required packages:
+```console
+> pip install -r requirements.txt
 # Data Management for Sleep Study
 
 ## Overview
