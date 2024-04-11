@@ -4,7 +4,7 @@ Data management scripts for Simons Sleep Project
 1. [Abstract](#abstract)
 2. [Requirements](#requirements)
 3. [Installation](#installation)
-4. [Usage](#usage)
+4. [Project Structure](#Project Structure)
 5. [Citation](#citation)
 
 
@@ -34,16 +34,24 @@ This command reads the sleep.yml file, sets up the sleep_study environment with 
 Activate the environment before running the script with:
 > conda activate sleep
 
+## Project Structure
 
-# 1. Slurm Scripts
+The project operates on a hierarchical pipeline logic, beginning with the synchronization of database and AWS bucket data, followed by preprocessing and data harmonization. The final steps involve processing the data to infer basic sleep and activity measures.
 
-## 1.1 Iteration Over Dates (i.e. `slurm_files/slurm_zcy.sh`)
+The primary orchestrators for the Dreem and Empatica data are the empatica_sync.py and dreem_sync.py scripts, respectively. These scripts include embedded slurm commands to process user data, iterating over participant dates and performing various data management tasks, such as timezone harmonization, typo correction, and raw data analysis for deriving metrics like activity counts and sleep/wake classifications.
 
-#!/bin/bash
-#SBATCH --time 1:00:00
-#SBATCH --job-name=Sleep_study
-#SBATCH --output=ceph/emp_zcy_%a.out
-#SBATCH --mem 20GB
+# Empatica Sync Script
+The empatica_sync.py script is responsible for pulling data from the AWS cloud for Empatica devices, organizing it according to participant and date, and initiating subsequent processing steps. It uses AWS CLI commands for data synchronization and schedules daily tasks to update and process new data.
+
+Key steps include:
+
+1. Synchronizing Empatica device data from an AWS S3 bucket to a local directory.
+2. Running slurm batch jobs to preform preprocessing and hramonization of the the data
+3. aggregating the data and generating summarized sleep data reports.
+
+This script ensures that all Empatica data is current and correctly allocated, facilitating the comprehensive analysis of participant sleep patterns.
+The General structure of the code works on hirracical logic of pipline of set of actions starting from the syncronization of the data in the databese exising in the cluser with the device data the is on the AWS bucket for each of the different devices. The next step after the syncronization is preprocessing and harmonization of the data and finaly there are proccesing steps to infer some basic sleep and activity measures form the data. 
+
 
 ### Loop over specified dates
 for target_date in {2023-11-17,2023-11-18,2023-11-19,2023-11-20,2023-11-21,2023-11-22,2023-11-23,2023-11-24,2023-11-25,2023-11-26,2023-11-27,2023-11-28}; do
