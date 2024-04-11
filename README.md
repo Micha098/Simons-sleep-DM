@@ -4,7 +4,7 @@ Data management scripts for Simons Sleep Project
 1. [Abstract](#abstract)
 2. [Requirements](#requirements)
 3. [Installation](#installation)
-4. [Project Structure](#Project Structure)
+4. [Project Structure](#project-structure)
 5. [Citation](#citation)
 
 
