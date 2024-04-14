@@ -145,8 +145,8 @@ tzs_str = pd.read_csv('/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/subjects
 # Convert Dreem Hypmnogram to desired format 
 
 directory = f'/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/raw_data/harmonized_data/{subject_id[j]}/hypno/'
-output_folder2 = f'/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/dreem/{subject_id[j]}/txt/csv/'
-output_folder =f'/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/raw_data/harmonized_data/{subject_id[j]}/hypno/csv/'
+output_folder2 = f'/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/data_share/{subject_id[j]}/dreem/hypno/'
+output_folder =f'/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/raw_data/harmonized_data/{subject_id[j]}/hypno/'
 
 if not os.path.isdir(directory):
         os.makedirs(directory)
@@ -229,11 +229,15 @@ if len (os.listdir(directory)) > 0:
                             df['time'] = pd.to_datetime(date.strftime('%Y-%m-%d') + ' ' + df['Time [hh:mm:ss]'], format='%Y-%m-%d %H:%M:%S')
                             df['time'] = df['time'].dt.tz_localize(file_tz.zone)
 
+                            df.drop('Time [hh:mm:ss]', axis=1, inplace=True)
+                            
+                            reorder = ['Sleep Stage','time','Event','Duration[s]']
 
+                            df = df[reorder]
 
                             os.remove(directory+filename) # delete the old foramt files
 
-                            df.to_csv(f'{output_folder}/dreem_{subject_id[j]}_{date}.txt', sep='\t')
+                            #df.to_csv(f'{output_folder}/dreem_{subject_id[j]}_{date}.txt', sep='\t')
                             df.to_csv(f'{output_folder}/dreem_{subject_id[j]}_{date}.csv', index=False)
                             df.to_csv(f'{output_folder2}/dreem_{subject_id[j]}_{date}.csv', index=False)
             

@@ -154,10 +154,14 @@ sleep_measures_per_night.loc[sleep_measures_per_night['TST'] > 780, ['WASO', 'TS
 try:
     sleep_measures_per_night.loc[np.isnat(sleep_measures_per_night['so']), ['WASO', 'TST']] = None
 except:
-    continue
+    print('so not it sleep_measures_per_night columns' )
 if 'ref_time' in sleep_measures_per_night.columns:
 
     sleep_measures_per_night.drop('ref_time', axis=1, inplace=True)
-
-sleep_measures_per_night.to_csv(f'{output_dir}summary_sleep_emp_{user}.csv')
+try:
+    os.makedirs(output_dir, exist_ok=True)
+    os.remove(f'{output_dir}/summary_sleep_emp_{user}.csv')
+except:
+    print('no file to remove')
+sleep_measures_per_night.to_csv(f'{output_dir}empatica_nights_summary_101{user}.csv')
 print(f'completed user {user}')

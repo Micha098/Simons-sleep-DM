@@ -22,22 +22,57 @@ from Empatica_rawdata_acc import acc_raw_data
 from Empatica_rawdata_bvp import bvp_raw_data
 from Empatica_rawdata_temp import temp_raw_data
 from Empatica_rawdata_eda import eda_raw_data
+from Empatica_rawdata_gyro import gyro_raw_data
 
 
 i = int(sys.argv[1]) 
 
-acc_raw_data(i)
 
-print(i)
 
-acc_bvp_data(i)
 
-print(i)
+try:
+    bvp_raw_data(i)
 
-acc_eda_data(i)
+    print(i)
 
-print(i)
+except Exception as e:
+    print(f"Error processing data for subject_id {participant_id}: {e}")
+    
+try:
 
-acc_temp_data(i)
+    eda_raw_data(i)
 
-print(i)
+    print(i)
+
+except Exception as e:
+    print(f"Error processing data for subject_id {participant_id}: {e}")
+ 
+    
+try:
+    temp_raw_data(i)
+
+    print(i)
+
+
+except Exception as e:
+    print(f"Error processing data for subject_id {participant_id}: {e}")
+
+    
+try:
+    gyro_raw_data(i)
+
+    print(i)
+
+except Exception as e:
+    print(f"Error processing data for subject_id {participant_id}: {e}")
+
+
+try:
+    acc_raw_data(i)
+
+    print(i)
+
+except Exception as e:
+    print(f"Error processing data for subject_id {participant_id}: {e}")
+
+sys.exit()

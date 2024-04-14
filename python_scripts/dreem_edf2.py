@@ -38,7 +38,7 @@ subject_id = pd.read_csv('/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/subje
 tzs_str = pd.read_csv('/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/subjects_ids.csv')['tz_str'].tolist()
 
 input_folder = f'/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/raw_data/harmonized_data/{subject_id[j]}/'
-output_folder2= f'/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/dreem/{subject_id[j]}/'
+output_folder2 = f'/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/share_data/{subject_id[j]}/dreem/'
 output_folder = f'/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/raw_data/harmonized_data/{subject_id[j]}/'
 
 date_list = [re.search(r'\d{4}-\d{2}-\d{2}', file).group() for file in os.listdir(output_folder) if file.endswith(".edf") and not file.startswith("eeg") ]
@@ -52,11 +52,11 @@ args = parser.parse_args(args=['--project_name', 'Dreem', '--model', 'YASA'])
 # Set directory path to where the EDF files are located
 edf_in = input_folder + '/edf/'
 edf_out = output_folder + '/edf/'
-edf_out2 = output_folder + '/edf/'
+edf_out2 = output_folder2 + '/edf/'
 
-csv_dir = output_folder + '/hypno/csv/'
-fft_dir = output_folder2 + '/fft/'
-noise_dir = output_folder2 + '/noise/'
+csv_dir = output_folder + '/hypno/'
+fft_dir = output_folder + '/fft/'
+noise_dir = output_folder + '/noise/'
 
 # Check and create directories if they don't exist
 for directory in [edf_in,edf_out, csv_dir, fft_dir, noise_dir]:
@@ -123,6 +123,7 @@ for pathi in path_edfs:
             if file_size < size_limit:
                 print(f"File {path_edf} is smaller than 20MB and will be deleted.")
                 os.remove(path_edf)  # Delete the file
+                continue
             else:
                 print(f'processing {path_edf}')
                 # Proceed with loading the EDF file as it meets the size criteria

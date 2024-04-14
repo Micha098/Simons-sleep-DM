@@ -21,6 +21,11 @@ import time as timer
 
 # code for AWS data pull
 
+os.environ['ACCESS_URL'] = 
+os.environ['LOCAL_PATH'] = 
+os.environ['AWS_ACCESS_KEY_ID'] = 
+os.environ['AWS_SECRET_ACCESS_KEY'] = 
+
 sync_command = f"aws s3 sync {os.environ['ACCESS_URL']} {os.environ['LOCAL_PATH']} --region us-east-1"
 subprocess.run(sync_command, shell=True)
 subprocess.run(f"{sync_command} > output.txt", shell=True)

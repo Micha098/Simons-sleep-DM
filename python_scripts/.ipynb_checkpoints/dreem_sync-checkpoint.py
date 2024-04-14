@@ -29,6 +29,11 @@ from dreem_summ_data import summary_data_dreem
 
 # code for pulling the data from aws
 
+os.environ['ACCESS_URL'] = 
+os.environ['LOCAL_PATH'] = 
+os.environ['AWS_ACCESS_KEY_ID'] =
+os.environ['AWS_SECRET_ACCESS_KEY'] =
+
 #aws configure AWS Access Key ID [None]: AWS_ACCESS_KEY_ID AWS Secret Access Key [None]: AWS_SECRET_ACCESS_KEY
 
 sync_command = f"aws s3 sync {os.environ['ACCESS_URL']} {os.environ['LOCAL_PATH']} --region us-east-1"
@@ -86,11 +91,8 @@ command = [
     'sbatch', '/mnt/home/mhacohen/slurm_files/slurm_dreem_job.sh',
 ]
 subprocess.run(command)
-# print('sleeping')
 # wait 60 minutes hour 
-# timer.sleep(60 * 60)  # 60 minutes * 60 seconds
-# print('awake')
-
+timer.sleep(60 * 60)  # 60 minutes * 60 seconds
 
 # count files per user
 all_users = []
