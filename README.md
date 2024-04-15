@@ -72,7 +72,7 @@ Below is a tree diagram that demonstrates the original organization of the data 
 
 ![raw_data](https://github.com/Micha098/Simons-sleep-DM/assets/107123518/f5e32b5b-4adb-49d3-b4e1-d3144f1d0464)
 
-### Aggregated Data Processing
+### Summrized Data Processing
 - **Slurm Job Submission**: The aggregated data script submits a Slurm job to process summary measures from the Empatica directory. It combines these measures into a single table per day in the format `empatica_measures_{subject_id}_{date}.csv`.
 - **Measurements Processed**: The measures included in this process are wear detection, sleep detection, activity count, step count, heart rate, and respiratory rate. Importantly, since not all summary data were released by Empatica at the same time (i.e. "respiratory rate"), some participents have only some of the measures meantioned above.
 - 
@@ -109,10 +109,17 @@ The script calls a dictionary table that translates betweeen Dreem-id and dates 
 - **subject ids mapping and mapping**: Since every Dreem_id is associated with few different participent ids at different dates,the script redirect the appropriate Dreem files to the folders of the correct subjects, ensuring that each set of data is associated with the right participant.
 
 
+#### Hypnogram Processing
+- **Slurm Job Submission**: The script submits a job to process Dreem hypnogram data using `slurm_dreem_hypno.sh`. This job focuses on handling the raw hypnogram outputs from Dreem devices. The command is followed by a 10-min timer wait, to allow the complition of the hypnogram preprocessing that is necessary for the next stage.
 
-#### Slurm Job Management
-- **Initial Slurm Job Submission**: Submits a job to process Dreem hypnogram data (`slurm_dreem_hypno.sh`), followed by a 10-minute wait.
-- **Further Data Processing**: Submits an additional Slurm job (`slurm_dreem_job.sh`) for further data processing, followed by a 60-minute wait to ensure completion.
+- **Preprocessing and Time Zone Correction**: The script iterates over each file per user, comparing the time zone indicated in the file with the one listed in the "subjects_ids" data frame. If discrepancies are found, the data is shifted to align with the correct time zone. Additionally, it reconstructs the data to eliminate unnecessary text, enabling the data to be saved in a more usable CSV format. Each file is saved as a per-night file named `dreem_{subject_id}_{date}.csv`, where `date` represents the morning after the recording. The Slurm command is followed by a 10-min timer wait to ensure completion. This allows the complition of the hypnogram preprocessing that is necessary for the next stage.
+
+#### edf files Processing
+
+- **Further Data Processing**: The script submits a job to process edf files (`slurm_dreem_job.sh`) followed by a 60-minute wait to ensure completion.
+
+- **Preprocessing and Time Zone Correction**: The script iterates over each file per user, and like the code for the hypnograms files, comparing the time zone indicated in the file with the one listed in the "subjects_ids" data frame. If discrepancies are found, the data is shifted to align with the correct time zone. The corrections are made for the edf files themselves, and not just the filenames, so that every edf file is opened the the recording time is updated in the Start_rec cell of every file. Additionally, it reconstructs the data to eliminate unnecessary text, enabling the data to be saved in a more usable CSV format. Each file is saved as a per-night file named `eeg_{subject_id}_{date}.csv`, where `date` represents the morning after the recording.
+  
 
 #### Reporting and Error Handling
 - **Error Handling**: Includes robust error handling to catch and log issues during data processing, ensuring transparency in case of failures.
