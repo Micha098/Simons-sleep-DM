@@ -116,9 +116,11 @@ The script calls a dictionary table that translates betweeen Dreem-id and dates 
 
 #### edf files Processing
 
-- **Further Data Processing**: The script submits a job to process edf files (`slurm_dreem_job.sh`) followed by a 60-minute wait to ensure completion.
+#### EDF Files Processing
 
-- **Preprocessing and Time Zone Correction**: The script iterates over each file per user, and like the code for the hypnograms files, comparing the time zone indicated in the file with the one listed in the "subjects_ids" data frame. If discrepancies are found, the data is shifted to align with the correct time zone. The corrections are made for the edf files themselves, and not just the filenames, so that every edf file is opened the the recording time is updated in the Start_rec cell of every file. Additionally, it reconstructs the data to eliminate unnecessary text, enabling the data to be saved in a more usable CSV format. Each file is saved as a per-night file named `eeg_{subject_id}_{date}.csv`, where `date` represents the morning after the recording.
+- **Further Data Processing**: Submits a job to process EDF files using `slurm_dreem_job.sh`, followed by a 60-minute wait to ensure the completion of this intensive task.
+
+- **Preprocessing and Time Zone Correction**: Similar to the hypnogram files processing, this script iterates over each EDF file per user, comparing the time zone indicated in the file with the one listed in the "subjects_ids" data frame. If any discrepancies are found, the script adjusts the time zone accordingly. This correction modifies the actual data within the EDF files, particularly updating the 'Start_rec' timestamp to reflect the correct recording time. Additionally, the script cleans the data by removing unnecessary text, making the data suitable for storage in a CSV format. Each processed file is then saved as a per-night file named `eeg_{subject_id}_{date}.csv`, where `date` is the morning following the recording.
   
 
 #### Reporting and Error Handling
