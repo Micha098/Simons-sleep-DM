@@ -46,7 +46,9 @@ Bellow is a tree digram that demonstrates the orgnization of the data at the end
 ![data_share](https://github.com/Micha098/Simons-sleep-DM/assets/107123518/ce2a49b8-7102-48ce-badb-22c47a539847)
 
 
-## Empatica Sync Script
+## Emaptica script
+`empatica_sync.py`
+
 The empatica_sync.py script is responsible for pulling data from the AWS cloud for Empatica devices, organizing it according to participant and date, and initiating subsequent processing steps. It uses AWS CLI commands for data synchronization and schedules daily tasks to update and process new data.
 
 This script ensures that all Empatica data is current and correctly allocated, facilitating the comprehensive analysis of participant sleep patterns.
@@ -91,8 +93,8 @@ A more detailed explantion regarding Emaptica measures, and some preproccing cod
 
 /https://manuals.empatica.com/ehmp/careportal/data_access/v2.4e/en.pdf
 
-## Dreem Sync Script
-
+## Dreem script
+`dreem_sync.py`
 This script handles the synchronization of sleep data from Dreem devices, processes the data, and prepares summary reports. Below are the key functionalities implemented in the script:
 
 #### AWS Data Pull
@@ -124,5 +126,6 @@ The script calls a dictionary table that translates betweeen Dreem-id and dates 
 - **Preprocessing and Time Zone Correction**: Similar to the hypnogram files processing, this script iterates over each EDF file per user, comparing the time zone indicated in the file with the one listed in the "subjects_ids" data frame. If any discrepancies are found, the script adjusts the time zone accordingly. This correction modifies the actual data within the EDF files, particularly updating the 'Start_rec' timestamp to reflect the correct recording time. Additionally, the script cleans the data by removing unnecessary text, making the data suitable for storage in a CSV format. Each processed file is then saved as a per-night file named `eeg_{subject_id}_{date}.csv`, where `date` is the morning following the recording.
   
 
-## Dreem Sync Script
+## Withings script
+`withings_sync.py`
 
