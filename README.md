@@ -5,8 +5,9 @@ Data management scripts for Simons Sleep Project
 2. [Requirements](#requirements)
 3. [Installation](#installation)
 4. [Project Structure](#project-structure)
-5. [Citation](#citation)
-
+5. [Emaptica script](#empatica-sync)
+6. [Dreem script](#dreem-sync)
+7. [Withings script](#Withings-sync)
 
 ## Abstract
 
@@ -45,7 +46,7 @@ Bellow is a tree digram that demonstrates the orgnization of the data at the end
 ![data_share](https://github.com/Micha098/Simons-sleep-DM/assets/107123518/ce2a49b8-7102-48ce-badb-22c47a539847)
 
 
-# Empatica Sync Script
+## Empatica Sync Script
 The empatica_sync.py script is responsible for pulling data from the AWS cloud for Empatica devices, organizing it according to participant and date, and initiating subsequent processing steps. It uses AWS CLI commands for data synchronization and schedules daily tasks to update and process new data.
 
 This script ensures that all Empatica data is current and correctly allocated, facilitating the comprehensive analysis of participant sleep patterns.
@@ -90,7 +91,7 @@ A more detailed explantion regarding Emaptica measures, and some preproccing cod
 
 /https://manuals.empatica.com/ehmp/careportal/data_access/v2.4e/en.pdf
 
-# Dreem Sync Script
+## Dreem Sync Script
 
 This script handles the synchronization of sleep data from Dreem devices, processes the data, and prepares summary reports. Below are the key functionalities implemented in the script:
 
@@ -123,11 +124,5 @@ The script calls a dictionary table that translates betweeen Dreem-id and dates 
 - **Preprocessing and Time Zone Correction**: Similar to the hypnogram files processing, this script iterates over each EDF file per user, comparing the time zone indicated in the file with the one listed in the "subjects_ids" data frame. If any discrepancies are found, the script adjusts the time zone accordingly. This correction modifies the actual data within the EDF files, particularly updating the 'Start_rec' timestamp to reflect the correct recording time. Additionally, the script cleans the data by removing unnecessary text, making the data suitable for storage in a CSV format. Each processed file is then saved as a per-night file named `eeg_{subject_id}_{date}.csv`, where `date` is the morning following the recording.
   
 
-#### Reporting and Error Handling
-- **Error Handling**: Includes robust error handling to catch and log issues during data processing, ensuring transparency in case of failures.
-- **Report Generation**: Aggregates data from multiple sources (Withings, Empatica, Dreem) for each subject. Summarizes the number of files processed and valid nights/days recorded for each device type and participant.
-
-#### Final Output
-- **Merged Reports**: Combines individual reports into comprehensive tables that list nights and valid measurements per subject. These are further classified by subject type (`ASD` or `NASD`) and saved in a structured format for easy access and analysis.
-- **Nightly and Daily Reports**: Generates final reports detailing valid measurement days and nights for each participant, facilitating further analysis on sleep patterns and device efficiency.
+## Dreem Sync Script
 
