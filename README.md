@@ -1,5 +1,5 @@
 # Simons-sleep-DM
-Data management scripts for Simons Sleep Project 
+Data management scripts for the Simons Sleep Project 
 
 1. [Abstract](#abstract)
 2. [Requirements](#requirements)
@@ -11,12 +11,12 @@ Data management scripts for Simons Sleep Project
 
 ## Abstract
 
-This repository holds the codebase, scripts and files for the creation and managment of the Simons Sleep Project pilot repository.
+This repository holds the codebase, scripts and files for the creation and managment of the Simons Sleep Project data repository.
 
-In this project we collected data from at-home sleep recordings using an EEG headband (Dreem; Beacon bio-siganls Ltd., a under-the-mattress pressures sensor (Withings ) and a multi-sensor smartwatch (EmbracePlus).
+In this project we collected at-home sleep recordings using an EEG headband (Dreem; Beacon bio-siganls), an under-the-mattress sensor (Withings), and a multi-sensor smartwatch (EmbracePlus).
 
 ## Requirements
-he following environment and libraries are required:
+The following environment and libraries are required to run the code:
 
 1. Python 3.8 or newer
 2. AWS CLI 
@@ -35,16 +35,17 @@ This command reads the sleep.yml file, sets up the sleep_study environment with 
 Activate the environment before running the script with:
 > conda activate sleep
 
-## Project Structure
+## Initial Project Data Structure - Downloaded from device servers
 
-The project operates on a hierarchical pipeline logic, beginning with the synchronization of database and AWS bucket data, followed by preprocessing and data harmonization. The final steps involve processing the data to infer basic sleep and activity measures.
+The data recorded by each of the three devices exists on the device company server and is organized by username (assigned to each participant by the research assisstant when onboarding). Our code begins with download/synchronization of data from each of the three AWS buckets containing this data (one per device) into a folder named "SubjectData", which contains the same data structure as provided by the device company through their AWS buckets, with a sub-folder per device:
+![raw_data](https://github.com/Micha098/Simons-sleep-DM/assets/107123518/f5e32b5b-4adb-49d3-b4e1-d3144f1d0464)
 
-The primary orchestrators for the Dreem and Empatica data are the empatica_sync.py and dreem_sync.py scripts, respectively. These scripts include embedded slurm commands to process user data, iterating over participant dates and performing various data management tasks, such as timezone harmonization, typo correction, and raw data analysis for deriving metrics like activity counts and sleep/wake classifications.
+## Target Project Data Structure for data sharing
 
-Bellow is a tree digram that demonstrates the orgnization of the data at the end of the data processing and harmonization process described above
-
+The data in "SubjectData" is processed and harmonized across devices to create a new data structure that enables data sharing. This data is organized in a folder named "data_share" that contains a sub folder per participant, named according to their internal user id (SPARK RIDs), with each participant folder containing a sub folder per device with their harmonized data. Harmonized data contains data timestamps that have been adjusted to reflect the timezone the participant was in when recording, and data files are split into 24 hour periods per date. Bellow is a tree digram that demonstrates the orgnization of the data at the end of the data processing and harmonization:
 ![data_share](https://github.com/Micha098/Simons-sleep-DM/assets/107123518/ce2a49b8-7102-48ce-badb-22c47a539847)
 
+The primary code files for synching, restructuring, and processing the Dreem, Withings, and Empatica data are the dreem_sync.py, withings_synch.py, and empatica_sync.py scripts, respectively. These scripts include embedded slurm commands to download and process user data, iterating over recording dates and performing various data management tasks, such as mapping device usernames to subject ids, adjusting data timestamps to the participant's timezone, and correction of data acquisition mistakes (e.g., mistakes in the allocation of device usernames). Below is a detailed explanation of each code file per device.
 
 ## Emaptica script
 `empatica_sync.py`
@@ -71,9 +72,7 @@ subprocess.run(f"{sync_command} > output.txt", shell=True)
 ### Data Preparation
 - **Subject Data Retrieval**: This step extracts subject IDs and their respective time zones from a CSV file at a specified path, ensuring accurate data handling for each subject.
 
-Below is a tree diagram that demonstrates the original organization of the data when it is pulled from the S3 cloud:
 
-![raw_data](https://github.com/Micha098/Simons-sleep-DM/assets/107123518/f5e32b5b-4adb-49d3-b4e1-d3144f1d0464)
 
 ### Summrized Data Processing
 - **Slurm Job Submission**: The aggregated data script submits a Slurm job to process summary measures from the Empatica directory. It combines these measures into a single table per day in the format `empatica_measures_{subject_id}_{date}.csv`.
