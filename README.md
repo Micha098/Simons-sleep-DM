@@ -87,8 +87,16 @@ subprocess.run(f"{sync_command} > output.txt", shell=True)
 - **Slurm Job Submission**: A second Slurm job processes raw data from the Empatica directory, producing individual daily files adjusted to each subject's time zone.
 
 - **Raw Data Processed**: This process handles raw data including accelerometer, gyroscope, blood volume pulse (BVP), electrodermal activity (EDA), and temperature. Similar to summary data, the availability of certain types of raw data (e.g., gyroscope) may vary among participants. Data sampling frequencies range from 1 to 64 Hz.
-- **Preprocessing**: Raw data are stored in Avro files segmented into 15-minute intervals, formatted as `1-1-{sub_id}_{UNIX timestamp}.avro`, where the timestamp marks the start of the 15-minute period. The script extracts and concatenates these data into one array per day, filling any gaps with NaN values.
+- **Preprocessing**: Raw data are stored in Avro files segmented into 15-minute intervals, formatted as `1-1-{device_ids}_{UNIX timestamp}.avro`, where the timestamp marks the start of the 15-minute period. The script extracts and concatenates these data into one array per day, filling any gaps with NaN values.
 - **Time Zone Handling**: As with summary data, raw data uploaded in UTC at 00:00 are concatenated into two-day segments. These are then adjusted to match each participant's local time zone and subsequently split into individual daily files.
+
+#### Data Mapping
+The script maps the various files to their corresponding directories by comparing the device IDs, which show in the folder names (refer to the raw data tree diagram), to the "project subject IDs" listed in the "Devices & Usernames" tab of the "Participants and Devices" Google Sheet:
+
+[Participants and Devices Google Sheet](https://docs.google.com/spreadsheets/d/1B0EbEjfHTzs4D0NXk4kULx8n68n6qMrA9KCv29LJRQk/edit?usp=sharing)
+
+**Note**: This table also facilitates future conversions from "project subject IDs" to the Spark RIDs displayed in the same table.
+
 
 
 A more detailed explantion regarding Emaptica measures, and some preproccing code examples could be found in the Ematica documenation:
@@ -109,6 +117,14 @@ subprocess.run(f"{sync_command} > output.txt", shell=True)
 ```
 #### Data Mapping
 The script calls a dictionary table that translates betweeen Dreem-id and dates to the subject ids. the code then allcoates the appropiate dreem files to the folders of the correct subjects.
+
+The script is mapping the different files to their corrisponding directotries by comapring the device_ids that show the filenames and dates that show in the dreem files to the "project subject ids" that show in the "Dreem data check" tab of the "Participants and devices" google sheet:
+
+https://docs.google.com/spreadsheets/d/1B0EbEjfHTzs4D0NXk4kULx8n68n6qMrA9KCv29LJRQk/edit?usp=sharing
+
+This table shows the corresponding subject_id to each device id and start and end date of use of each participent. 
+
+Note: this table will also allow in the future to make the qucik translation between the "project subject ids" to the Spark RIDs that show in the same table.
 
 - **Unique Case mapping**: Calls the `dreem_allocation()` function to prepare a list of cases of "unique cases" for data saved incorrectly under the wrong Dreem user id or worng device.
 - **subject ids mapping and mapping**: Since every Dreem_id is associated with few different participent ids at different dates,the script redirect the appropriate Dreem files to the folders of the correct subjects, ensuring that each set of data is associated with the right participant.
