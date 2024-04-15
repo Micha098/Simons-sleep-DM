@@ -5,9 +5,9 @@ Data management scripts for the Simons Sleep Project
 2. [Requirements](#requirements)
 3. [Installation](#installation)
 4. [Project Structure](#project-structure)
-5. [Emaptica script](#empatica-sync)
-6. [Dreem script](#dreem-sync)
-7. [Withings script](#Withings-sync)
+5. [Emaptica Script](#empatica-sync)
+6. [Dreem Script](#dreem-sync)
+7. [Withings Script](#Withings-sync)
 
 ## Abstract
 
@@ -36,7 +36,9 @@ This command reads the sleep.yml file, sets up the sleep_study environment with 
 Activate the environment before running the script with:
 > conda activate sleep
 
-## Initial Project Data Structure - Downloaded from device servers
+## Project Structure
+
+# Initial Project Data Structure - Downloaded from device servers
 
 The data recorded by each of the three devices exists on the device company server and is organized by username (assigned to each participant by the research assisstant when onboarding). Our code begins with download/synchronization of data from each of the three AWS buckets containing this data (one per device) into a folder named "SubjectData", which contains the same data structure as provided by the device company through their AWS buckets, with a sub-folder per device:
 ![raw_data](https://github.com/Micha098/Simons-sleep-DM/assets/107123518/f5e32b5b-4adb-49d3-b4e1-d3144f1d0464)
@@ -48,7 +50,7 @@ The data in "SubjectData" is processed and harmonized across devices to create a
 
 The primary code files for synching, restructuring, and processing the Dreem, Withings, and Empatica data are the dreem_sync.py, withings_synch.py, and empatica_sync.py scripts, respectively. These scripts include embedded slurm commands to download and process user data, iterating over recording dates and performing various data management tasks, such as mapping device usernames to subject ids, adjusting data timestamps to the participant's timezone, and correction of data acquisition mistakes (e.g., mistakes in the allocation of device usernames). Below is a detailed explanation of each code file per device.
 
-## Emaptica script
+## Emaptica Script
 `empatica_sync.py`
 
 The empatica_sync.py script is responsible for pulling data from the AWS cloud for Empatica devices, organizing it according to participant and date, and initiating subsequent processing steps. It uses AWS CLI commands for data synchronization and schedules daily tasks to update and process new data.
@@ -78,7 +80,7 @@ subprocess.run(f"{sync_command} > output.txt", shell=True)
 ### Summrized Data Processing
 - **Slurm Job Submission**: The aggregated data script submits a Slurm job to process summary measures from the Empatica directory. It combines these measures into a single table per day in the format `empatica_measures_{subject_id}_{date}.csv`.
 - **Measurements Processed**: The measures included in this process are wear detection, sleep detection, activity count, step count, heart rate, and respiratory rate. Importantly, since not all summary data were released by Empatica at the same time (i.e. "respiratory rate"), some participents have only some of the measures meantioned above.
-- 
+  
 - **Time Zone Handling**: Since data on the Empatica server is uploaded in UTC (00:00), the data for each participant is concatenated into one long file per subject. It is then adjusted to match each participant's local time zone before being split again into individual daily files for each subject.
 
 ### Raw Data Processing
@@ -93,7 +95,7 @@ A more detailed explantion regarding Emaptica measures, and some preproccing cod
 
 /https://manuals.empatica.com/ehmp/careportal/data_access/v2.4e/en.pdf
 
-## Dreem script
+## Dreem Script
 `dreem_sync.py`
 This script handles the synchronization of sleep data from Dreem devices, processes the data, and prepares summary reports. Below are the key functionalities implemented in the script:
 
@@ -128,7 +130,7 @@ More detailed explantion regarding Dreem devices, the electrode location and the
 [/https://manuals.empatica.com/ehmp/careportal/data_access/v2.4e/en.pdf
 ](https://academic.oup.com/sleep/article/43/11/zsaa097/5841249)
 
-## Withings script
+## Withings Script
 `withings_sync.py`
 
 - **AWS S3 Data Sync**: Sets environment variables for AWS S3 access and synchronizes data from an S3 bucket to a local directory and Uses the AWS CLI command to sync data from the specified S3 bucket to a local path.
