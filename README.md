@@ -39,7 +39,45 @@ Activate the environment before running the script with:
 The project operates on a hierarchical pipeline logic, beginning with the synchronization of database and AWS bucket data, followed by preprocessing and data harmonization. The final steps involve processing the data to infer basic sleep and activity measures.
 
 The primary orchestrators for the Dreem and Empatica data are the empatica_sync.py and dreem_sync.py scripts, respectively. These scripts include embedded slurm commands to process user data, iterating over participant dates and performing various data management tasks, such as timezone harmonization, typo correction, and raw data analysis for deriving metrics like activity counts and sleep/wake classifications.
+
+
 ![data_share](https://github.com/Micha098/Simons-sleep-DM/assets/107123518/ce2a49b8-7102-48ce-badb-22c47a539847)
+
+![Uploading raw_data.png…]()
+
+## `empatica_sync.py`
+
+This script automates various data management and processing tasks for a sleep study. Below is a detailed description of its functionalities:
+
+### Environment Configuration
+
+- **AWS S3 Integration**: Sets environment variables for AWS S3 access and synchronizes data from an S3 bucket to a local directory. 
+
+### Data Synchronization
+- **S3 Data Sync**: Uses the AWS CLI command to sync data from the specified S3 bucket to a local path.
+
+### Data Preparation
+- **Subject Data Retrieval**: Extracts subject IDs and their time zones from a CSV file located at a predefined path, for accurate data handling per subject.
+
+### Slurm Job Submission
+- **Aggregated Data Processing**: Submits a Slurm job to process aggregated data.
+
+- **Sleep Data Summarization**: After a 60-minute wait, submits another job to summarize sleep data, followed by a 30-minute wait.
+
+### Nightly Report Generation
+- **Processing Individual Subjects**: Iterates through directories of subjects identified by specific prefixes. Processes different types of measurement data, generates summary tables, and handles exceptions.
+
+### Reporting
+- **Reports Merging and Output**: Combines multiple reports into a DataFrame, classifies subjects, and outputs the final report to a CSV file.
+
+### Additional Slurm Job
+- **Raw Data Processing**: Submits a Slurm job to process raw data.
+
+#### Example Notebook Command
+To run this script from a Jupyter notebook, you can use the following command:
+
+```python
+%run empatica_sync.py
 
 
 # Empatica Sync Script
