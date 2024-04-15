@@ -50,13 +50,12 @@ The data in "SubjectData" is processed and harmonized across devices to create a
 
 The primary code files for synching, restructuring, and processing the Dreem, Withings, and Empatica data are the dreem_sync.py, withings_synch.py, and empatica_sync.py scripts, respectively. These scripts include embedded slurm commands to download and process user data, iterating over recording dates and performing various data management tasks, such as mapping device usernames to subject ids, adjusting data timestamps to the participant's timezone, and correction of data acquisition mistakes (e.g., mistakes in the allocation of device usernames). Below is a detailed explanation of each code file per device.
 
+**Note**: A complete version of this code, which includes AWS access keys for each of the S3 buckets, can be found at `/mnt/home/mhacohen/python_files/`.
+
 ## Emaptica Script
 `empatica_sync.py`
 
 The empatica_sync.py script is responsible for pulling data from the AWS cloud for Empatica devices, organizing it according to participant and date, and initiating subsequent processing steps. It uses AWS CLI commands for data synchronization and schedules daily tasks to update and process new data.
-
-This script ensures that all Empatica data is current and correctly allocated, facilitating the comprehensive analysis of participant sleep patterns.
-The General structure of the code works on hirracical logic of pipline of set of actions starting from the syncronization of the data in the databese exising in the cluser with the device data the is on the AWS bucket for each of the different devices. The next step after the syncronization is preprocessing and harmonization of time zone of the data.
 
 Key steps include:
 
@@ -101,11 +100,12 @@ The script maps the various files to their corresponding directories by comparin
 
 A more detailed explantion regarding Emaptica measures, and some preproccing code examples could be found in the Ematica documenation:
 
-/https://manuals.empatica.com/ehmp/careportal/data_access/v2.4e/en.pdf
+[Emaptica manual](/https://manuals.empatica.com/ehmp/careportal/data_access/v2.4e/en.pdf)
 
 ## Dreem Script
 `dreem_sync.py`
-This script handles the synchronization of sleep data from Dreem devices, processes the data, and prepares summary reports. Below are the key functionalities implemented in the script:
+
+This script handles the synchronization of sleep data from Dreem devices, preprocesses the data, correct time-zone issues and maps the data into the correct destination. Below are the key functionalities implemented in the script:
 
 #### AWS Data Pull
 - **AWS S3 Data Sync**: Sets environment variables for AWS S3 access and synchronizes data from an S3 bucket to a local directory and Uses the AWS CLI command to sync data from the specified S3 bucket to a local path.
@@ -120,11 +120,9 @@ The script calls a dictionary table that translates betweeen Dreem-id and dates 
 
 The script is mapping the different files to their corrisponding directotries by comapring the device_ids that show the filenames and dates that show in the dreem files to the "project subject ids" that show in the "Dreem data check" tab of the "Participants and devices" google sheet:
 
-https://docs.google.com/spreadsheets/d/1B0EbEjfHTzs4D0NXk4kULx8n68n6qMrA9KCv29LJRQk/edit?usp=sharing
+[Participants and Devices Google Sheet](https://docs.google.com/spreadsheets/d/1B0EbEjfHTzs4D0NXk4kULx8n68n6qMrA9KCv29LJRQk/edit?usp=sharing)
 
 This table shows the corresponding subject_id to each device id and start and end date of use of each participent. 
-
-Note: this table will also allow in the future to make the qucik translation between the "project subject ids" to the Spark RIDs that show in the same table.
 
 - **Unique Case mapping**: Calls the `dreem_allocation()` function to prepare a list of cases of "unique cases" for data saved incorrectly under the wrong Dreem user id or worng device.
 - **subject ids mapping and mapping**: Since every Dreem_id is associated with few different participent ids at different dates,the script redirect the appropriate Dreem files to the folders of the correct subjects, ensuring that each set of data is associated with the right participant.
@@ -143,11 +141,11 @@ Note: this table will also allow in the future to make the qucik translation bet
 
 More detailed explantion regarding Dreem devices, the electrode location and the signal, could be found in the Beacon documenation and in this article 
 
-[/https://manuals.empatica.com/ehmp/careportal/data_access/v2.4e/en.pdf
-](https://academic.oup.com/sleep/article/43/11/zsaa097/5841249)
+[Dreem article](https://academic.oup.com/sleep/article/43/11/zsaa097/5841249)
 
 ## Withings Script
 `withings_sync.py`
+This script is responsible for pulling data from the AWS cloud for Withings devices. It organizes the data by participant and addresses time zone issues to ensure the data accurately reflects the local times of the respective participants.
 
 - **AWS S3 Data Sync**: Sets environment variables for AWS S3 access and synchronizes data from an S3 bucket to a local directory and Uses the AWS CLI command to sync data from the specified S3 bucket to a local path.
 
