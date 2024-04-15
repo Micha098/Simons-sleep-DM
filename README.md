@@ -47,12 +47,12 @@ The primary orchestrators for the Dreem and Empatica data are the empatica_sync.
 
 ## `empatica_sync.py`
 
-This script automates various data management and processing tasks for a sleep study. Below is a detailed description of its functionalities:
-
-### Environment Configuration
-
 - **AWS S3 Integration**: Sets environment variables for AWS S3 access and synchronizes data from an S3 bucket to a local directory. 
-
+```
+%sync_command = f"aws s3 sync {os.environ['ACCESS_URL']} {os.environ['LOCAL_PATH']} --region us-east-1"
+subprocess.run(sync_command, shell=True)
+subprocess.run(f"{sync_command} > output.txt", shell=True)
+```
 ### Data Synchronization
 - **S3 Data Sync**: Uses the AWS CLI command to sync data from the specified S3 bucket to a local path.
 
