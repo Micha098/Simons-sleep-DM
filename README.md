@@ -39,6 +39,8 @@ Activate the environment before running the script with:
 The project operates on a hierarchical pipeline logic, beginning with the synchronization of database and AWS bucket data, followed by preprocessing and data harmonization. The final steps involve processing the data to infer basic sleep and activity measures.
 
 The primary orchestrators for the Dreem and Empatica data are the empatica_sync.py and dreem_sync.py scripts, respectively. These scripts include embedded slurm commands to process user data, iterating over participant dates and performing various data management tasks, such as timezone harmonization, typo correction, and raw data analysis for deriving metrics like activity counts and sleep/wake classifications.
+![data_share](https://github.com/Micha098/Simons-sleep-DM/assets/107123518/ce2a49b8-7102-48ce-badb-22c47a539847)
+
 
 # Empatica Sync Script
 The empatica_sync.py script is responsible for pulling data from the AWS cloud for Empatica devices, organizing it according to participant and date, and initiating subsequent processing steps. It uses AWS CLI commands for data synchronization and schedules daily tasks to update and process new data.
