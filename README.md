@@ -40,27 +40,32 @@ The project operates on a hierarchical pipeline logic, beginning with the synchr
 
 The primary orchestrators for the Dreem and Empatica data are the empatica_sync.py and dreem_sync.py scripts, respectively. These scripts include embedded slurm commands to process user data, iterating over participant dates and performing various data management tasks, such as timezone harmonization, typo correction, and raw data analysis for deriving metrics like activity counts and sleep/wake classifications.
 
+Bellow is a tree digram that demonstrates the orgnization of the data at the end of the data processing and harmonization
 
 ![data_share](https://github.com/Micha098/Simons-sleep-DM/assets/107123518/ce2a49b8-7102-48ce-badb-22c47a539847)
 
-![Uploading raw_data.png…]()
 
 ## `empatica_sync.py`
 
-- **AWS S3 Integration**: Sets environment variables for AWS S3 access and synchronizes data from an S3 bucket to a local directory. 
+- **AWS S3 Data Sync**: Sets environment variables for AWS S3 access and synchronizes data from an S3 bucket to a local directory and Uses the AWS CLI command to sync data from the specified S3 bucket to a local path. 
 ```
 %sync_command = f"aws s3 sync {os.environ['ACCESS_URL']} {os.environ['LOCAL_PATH']} --region us-east-1"
 subprocess.run(sync_command, shell=True)
 subprocess.run(f"{sync_command} > output.txt", shell=True)
 ```
-### Data Synchronization
-- **S3 Data Sync**: Uses the AWS CLI command to sync data from the specified S3 bucket to a local path.
-
 ### Data Preparation
 - **Subject Data Retrieval**: Extracts subject IDs and their time zones from a CSV file located at a predefined path, for accurate data handling per subject.
 
+Below is the a tree diagram that demonstrates the original order in which the data is orgnized when its pulled from the S3 cloud
+
+![raw_data](https://github.com/Micha098/Simons-sleep-DM/assets/107123518/f5e32b5b-4adb-49d3-b4e1-d3144f1d0464)
+
+
 ### Slurm Job Submission
 - **Aggregated Data Processing**: Submits a Slurm job to process aggregated data.
+
+aggregated data 
+
 
 - **Sleep Data Summarization**: After a 60-minute wait, submits another job to summarize sleep data, followed by a 30-minute wait.
 
