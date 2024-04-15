@@ -131,8 +131,11 @@ More detailed explantion regarding Dreem devices, the electrode location and the
 ## Withings script
 `withings_sync.py`
 
-This script pulls data from the AWS cloud using the AWS CLI.
+- **AWS S3 Data Sync**: Sets environment variables for AWS S3 access and synchronizes data from an S3 bucket to a local directory and Uses the AWS CLI command to sync data from the specified S3 bucket to a local path.
 
 - **Time Zone Handling**: Data on the Withings server is initially uploaded in UTC at 01:00. This script adjusts each participant's data to match the time zone specified in the `subjects_id.csv` file. Specifically for the `sleep.csv` file, which already displays local time, the script corrects any discrepancies that may have occurred due to errors in the smartphone to which the device was connected.
 
 - **File Naming**: The data is saved under the same filename as it was received.
+
+A more detailed explantion regarding Withings measures, https://developer.withings.com/api-reference/#tag/measure and the `Withigns_README.rm` file
+
