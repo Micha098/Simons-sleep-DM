@@ -77,7 +77,7 @@ This script automates various data management and processing tasks for a sleep s
 To run this script from a Jupyter notebook, you can use the following command:
 
 ```python
-%run empatica_sync.py
+%run empatica_sync.py%
 
 
 # Empatica Sync Script
