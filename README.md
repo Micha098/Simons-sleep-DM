@@ -105,7 +105,14 @@ subprocess.run(f"{sync_command} > output.txt", shell=True)
 #### Data Allocation
 - **Unique Case Allocation**: Calls the `dreem_allocation()` function to prepare a list of cases of "unique cases" for data saved incorrectly under the wrong Dreem user id or worng device.
 - **subject ids mapping and Allocation**: Since every Dreem_id matches few different participent ids at different dates {that, is different subjects use the same device and id at diiferent dates} The script calls a dictionary table that translates betweeen Dreem-id and dates to the subject ids. the code then allcoates the appropiate dreem files to the folders of the correct subjects.
-- 
+
+#### Data Allocation
+
+- **Unique Case Allocation**: Executes the dreem_allocation() function, which identifies and corrects data that may have been saved under incorrect Dreem user IDs or devices. 
+- **subject ids mapping and Allocation**: Since every Dreem_id is associated with few different participent ids at different dates  The script allocates the appropriate Dreem files to the folders of the correct subjects, ensuring that each set of data is associated with the right participant for accurate analysis.
+   The script calls a dictionary table that translates betweeen Dreem-id and dates to the subject ids. the code then allcoates the appropiate dreem files to the folders of the correct subjects.
+Subject IDs Mapping and Allocation: Manages the complexities of device sharing among participants by using a dictionary table that maps Dreem IDs and dates to corresponding subject IDs. The script allocates the appropriate Dreem files to the folders of the correct subjects, ensuring that each set of data is associated with the right participant for accurate analysis.
+
 #### Slurm Job Management
 - **Initial Slurm Job Submission**: Submits a job to process Dreem hypnogram data (`slurm_dreem_hypno.sh`), followed by a 10-minute wait.
 - **Further Data Processing**: Submits an additional Slurm job (`slurm_dreem_job.sh`) for further data processing, followed by a 60-minute wait to ensure completion.
