@@ -40,12 +40,12 @@ The project operates on a hierarchical pipeline logic, beginning with the synchr
 
 The primary orchestrators for the Dreem and Empatica data are the empatica_sync.py and dreem_sync.py scripts, respectively. These scripts include embedded slurm commands to process user data, iterating over participant dates and performing various data management tasks, such as timezone harmonization, typo correction, and raw data analysis for deriving metrics like activity counts and sleep/wake classifications.
 
-Bellow is a tree digram that demonstrates the orgnization of the data at the end of the data processing and harmonization
+Bellow is a tree digram that demonstrates the orgnization of the data at the end of the data processing and harmonization process described above
 
 ![data_share](https://github.com/Micha098/Simons-sleep-DM/assets/107123518/ce2a49b8-7102-48ce-badb-22c47a539847)
 
 
-## `empatica_sync.py`
+## `empatica_sync script`
 
 - **AWS S3 Data Sync**: Sets environment variables for AWS S3 access and synchronizes data from an S3 bucket to a local directory and Uses the AWS CLI command to sync data from the specified S3 bucket to a local path. 
 ```
@@ -54,30 +54,22 @@ subprocess.run(sync_command, shell=True)
 subprocess.run(f"{sync_command} > output.txt", shell=True)
 ```
 ### Data Preparation
-- **Subject Data Retrieval**: Extracts subject IDs and their time zones from a CSV file located at a predefined path, for accurate data handling per subject.
+- **Subject Data Retrieval**: This step extracts subject IDs and their respective time zones from a CSV file at a specified path, ensuring accurate data handling for each subject.
 
-Below is the a tree diagram that demonstrates the original order in which the data is orgnized when its pulled from the S3 cloud
+Below is a tree diagram that demonstrates the original organization of the data when it is pulled from the S3 cloud:
 
 ![raw_data](https://github.com/Micha098/Simons-sleep-DM/assets/107123518/f5e32b5b-4adb-49d3-b4e1-d3144f1d0464)
 
+### Aggregated Data Processing
+- **Slurm Job Submission**: The aggregated data script submits a Slurm job to process summary measures from the Empatica directory. It combines these measures into a single table per day in the format `empatica_measures_{subject_id}_{date}.csv`.
+- **Measurements Processed**: The measures included in this process are wear detection, sleep detection, activity count, step count, heart rate, and respiratory rate. Importantly, since 
+- **Time Zone Handling**: Since data on the Empatica server is uploaded in UTC (00:00), the data for each participant is concatenated into one long file per subject. It is then adjusted to match each participant's local time zone before being split again into individual daily files for each subject.
 
-### Slurm Job Submission
-- **Aggregated Data Processing**: Submits a Slurm job to process aggregated data.
+### Raw Data Processing
+- **Slurm Job Submission**: The aggregated data script submits a Slurm job to process summary measures from the Empatica directory. Here also, the outputs of the scritp are indvidual files per day, in which every file is corrected to the time zone of the subject
+- **Raw data Processed**: The raw data included in this process are accelerometer, gyroscope, blood volume pulse (BVP),electroderaml activity (EDA) and temperature.
 
-aggregated data 
-
-
-- **Sleep Data Summarization**: After a 60-minute wait, submits another job to summarize sleep data, followed by a 30-minute wait.
-
-### Nightly Report Generation
-- **Processing Individual Subjects**: Iterates through directories of subjects identified by specific prefixes. Processes different types of measurement data, generates summary tables, and handles exceptions.
-
-### Reporting
-- **Reports Merging and Output**: Combines multiple reports into a DataFrame, classifies subjects, and outputs the final report to a CSV file.
-
-### Additional Slurm Job
-- **Raw Data Processing**: Submits a Slurm job to process raw data.
-
+- 
 #### Example Notebook Command
 To run this script from a Jupyter notebook, you can use the following command:
 
