@@ -88,6 +88,33 @@ Below is a tree diagram that demonstrates the original organization of the data 
 
 A more detailed explantion regarding Emaptica measures, and some preproccing code examples could be found in the Ematica documenation:
 
-chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/https://manuals.empatica.com/ehmp/careportal/data_access/v2.4e/en.pdf
+/https://manuals.empatica.com/ehmp/careportal/data_access/v2.4e/en.pdf
 
+# Dreem Sync Script
+
+This script handles the synchronization of sleep data from Dreem devices, processes the data, and prepares summary reports. Below are the key functionalities implemented in the script:
+
+#### AWS Data Pull
+- **AWS S3 Data Sync**: Sets environment variables for AWS S3 access and synchronizes data from an S3 bucket to a local directory and Uses the AWS CLI command to sync data from the specified S3 bucket to a local path.
+  
+```
+%sync_command = f"aws s3 sync {os.environ['ACCESS_URL']} {os.environ['LOCAL_PATH']} --region us-east-1"
+subprocess.run(sync_command, shell=True)
+subprocess.run(f"{sync_command} > output.txt", shell=True)
+```
+#### Data Allocation
+- **Unique Case Allocation**: Calls the `dreem_allocation()` function to prepare a list of cases of "unique cases" for data saved incorrectly under the wrong Dreem user id or worng device.
+- **subject ids mapping and Allocation**: Since every Dreem_id matches few different participent ids at different dates {that, is different subjects use the same device and id at diiferent dates} The script calls a dictionary table that translates betweeen Dreem-id and dates to the subject ids. the code then allcoates the appropiate dreem files to the folders of the correct subjects.
+- 
+#### Slurm Job Management
+- **Initial Slurm Job Submission**: Submits a job to process Dreem hypnogram data (`slurm_dreem_hypno.sh`), followed by a 10-minute wait.
+- **Further Data Processing**: Submits an additional Slurm job (`slurm_dreem_job.sh`) for further data processing, followed by a 60-minute wait to ensure completion.
+
+#### Reporting and Error Handling
+- **Error Handling**: Includes robust error handling to catch and log issues during data processing, ensuring transparency in case of failures.
+- **Report Generation**: Aggregates data from multiple sources (Withings, Empatica, Dreem) for each subject. Summarizes the number of files processed and valid nights/days recorded for each device type and participant.
+
+#### Final Output
+- **Merged Reports**: Combines individual reports into comprehensive tables that list nights and valid measurements per subject. These are further classified by subject type (`ASD` or `NASD`) and saved in a structured format for easy access and analysis.
+- **Nightly and Daily Reports**: Generates final reports detailing valid measurement days and nights for each participant, facilitating further analysis on sleep patterns and device efficiency.
 
