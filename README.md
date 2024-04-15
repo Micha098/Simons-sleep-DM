@@ -45,7 +45,17 @@ Bellow is a tree digram that demonstrates the orgnization of the data at the end
 ![data_share](https://github.com/Micha098/Simons-sleep-DM/assets/107123518/ce2a49b8-7102-48ce-badb-22c47a539847)
 
 
-## `empatica_sync script`
+# Empatica Sync Script
+The empatica_sync.py script is responsible for pulling data from the AWS cloud for Empatica devices, organizing it according to participant and date, and initiating subsequent processing steps. It uses AWS CLI commands for data synchronization and schedules daily tasks to update and process new data.
+
+This script ensures that all Empatica data is current and correctly allocated, facilitating the comprehensive analysis of participant sleep patterns.
+The General structure of the code works on hirracical logic of pipline of set of actions starting from the syncronization of the data in the databese exising in the cluser with the device data the is on the AWS bucket for each of the different devices. The next step after the syncronization is preprocessing and harmonization of time zone of the data.
+
+Key steps include:
+
+1. Synchronizing Empatica device data from an AWS S3 bucket to a local directory.
+2. Running slurm batch jobs to preform preprocessing and hramonization of the the data
+
 
 - **AWS S3 Data Sync**: Sets environment variables for AWS S3 access and synchronizes data from an S3 bucket to a local directory and Uses the AWS CLI command to sync data from the specified S3 bucket to a local path. 
 ```
@@ -62,40 +72,28 @@ Below is a tree diagram that demonstrates the original organization of the data 
 
 ### Aggregated Data Processing
 - **Slurm Job Submission**: The aggregated data script submits a Slurm job to process summary measures from the Empatica directory. It combines these measures into a single table per day in the format `empatica_measures_{subject_id}_{date}.csv`.
-- **Measurements Processed**: The measures included in this process are wear detection, sleep detection, activity count, step count, heart rate, and respiratory rate. Importantly, since 
+
+The following code submits the slurm job for raw data processing:
+  `command = [
+    'sbatch', '/mnt/home/mhacohen/slurm_files/slurm_agg.sh',
+]
+subprocess.run(command)`
+
+- **Measurements Processed**: The measures included in this process are wear detection, sleep detection, activity count, step count, heart rate, and respiratory rate. Importantly, since not all summary data were released by Empatica at the same time (i.e. "respiratory rate"), some participents have only some of the measures meantioned above.
+- 
 - **Time Zone Handling**: Since data on the Empatica server is uploaded in UTC (00:00), the data for each participant is concatenated into one long file per subject. It is then adjusted to match each participant's local time zone before being split again into individual daily files for each subject.
 
 ### Raw Data Processing
-- **Slurm Job Submission**: The aggregated data script submits a Slurm job to process summary measures from the Empatica directory. Here also, the outputs of the scritp are indvidual files per day, in which every file is corrected to the time zone of the subject
-- **Raw data Processed**: The raw data included in this process are accelerometer, gyroscope, blood volume pulse (BVP),electroderaml activity (EDA) and temperature.
+- **Slurm Job Submission**: A second Slurm job processes raw data from the Empatica directory, producing individual daily files adjusted to each subject's time zone.
+The following code submits the slurm job for raw data processing:
+  `command = [
+    'sbatch', '/mnt/home/mhacohen/slurm_files/slurm_raw.sh',
+]
+subprocess.run(command)`
 
-- 
-#### Example Notebook Command
-To run this script from a Jupyter notebook, you can use the following command:
-
-```python
-%run empatica_sync.py%
-
-
-# Empatica Sync Script
-The empatica_sync.py script is responsible for pulling data from the AWS cloud for Empatica devices, organizing it according to participant and date, and initiating subsequent processing steps. It uses AWS CLI commands for data synchronization and schedules daily tasks to update and process new data.
-
-Key steps include:
-
-1. Synchronizing Empatica device data from an AWS S3 bucket to a local directory.
-2. Running slurm batch jobs to preform preprocessing and hramonization of the the data
-3. aggregating the data and generating summarized sleep data reports.
-
-This script ensures that all Empatica data is current and correctly allocated, facilitating the comprehensive analysis of participant sleep patterns.
-The General structure of the code works on hirracical logic of pipline of set of actions starting from the syncronization of the data in the databese exising in the cluser with the device data the is on the AWS bucket for each of the different devices. The next step after the syncronization is preprocessing and harmonization of the data and finaly there are proccesing steps to infer some basic sleep and activity measures form the data. 
-
-
-### Loop over specified dates
-for target_date in {2023-11-17,2023-11-18,2023-11-19,2023-11-20,2023-11-21,2023-11-22,2023-11-23,2023-11-24,2023-11-25,2023-11-26,2023-11-27,2023-11-28}; do
-    # Call your Python script and pass the subject ID and date as arguments
-    sbatch slurm_files/init_conda.sh
-    sbatch --export=TARGET_DATE=$target_date slurm_files/slurm_zcy_job.sh
-done
+- **Raw Data Processed**: This process handles raw data including accelerometer, gyroscope, blood volume pulse (BVP), electrodermal activity (EDA), and temperature. Similar to summary data, the availability of certain types of raw data (e.g., gyroscope) may vary among participants. Data sampling frequencies range from 1 to 64 Hz.
+- **Preprocessing**: Raw data are stored in Avro files segmented into 15-minute intervals, formatted as `1-1-{sub_id}_{UNIX timestamp}.avro`, where the timestamp marks the start of the 15-minute period. The script extracts and concatenates these data into one array per day, filling any gaps with NaN values.
+- **Time Zone Handling**: As with summary data, raw data uploaded in UTC at 00:00 are concatenated into two-day segments. These are then adjusted to match each participant's local time zone and subsequently split into individual daily files.
 
 ## 1.2 Iteration Over Subjects (i.e. slurm_files/slurm_zcy_job.sh)
 #!/bin/bash
