@@ -21,6 +21,7 @@ The following environment and libraries are required to run the code:
 1. Python 3.8 or newer
 2. AWS CLI 
 3. An operating system with support for Python and the above libraries (tested on Linux Ubuntu 20.04 and macOS Catalina)
+4.Access to a Slurm-Managed Cluster
 
 Other OS/Python distributions are expected to work.
 
