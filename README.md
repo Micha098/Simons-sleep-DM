@@ -5,9 +5,9 @@ Data management scripts for the Simons Sleep Project
 2. [Requirements](#requirements)
 3. [Installation](#installation)
 4. [Project Structure](#project-structure)
-5. [Emaptica Script](#empatica-sync)
-6. [Dreem Script](#dreem-sync)
-7. [Withings Script](#Withings-sync)
+5. [Emaptica Script](#emaptica-script)
+6. [Dreem Script](#dreem-script)
+7. [Withings Script](#Withings-script)
 
 ## Abstract
 
@@ -100,7 +100,7 @@ The script maps the various files to their corresponding directories by comparin
 
 A more detailed explantion regarding Emaptica measures, and some preproccing code examples could be found in the Ematica documenation:
 
-[Emaptica manual](/https://manuals.empatica.com/ehmp/careportal/data_access/v2.4e/en.pdf)
+[Emaptica manual](https://github.com/Micha098/Simons-sleep-DM/blob/main/devices_manuals/empatica_doc.pdf)
 
 ## Dreem Script
 `dreem_sync.py`
