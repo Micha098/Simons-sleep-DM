@@ -40,7 +40,7 @@ Activate the environment before running the script with:
 
 # Initial Project Data Structure - Downloaded from device servers
 
-The data recorded by each of the three devices exists on the device company server and is organized by username (assigned to each participant by the research assisstant when onboarding). Our code begins with download/synchronization of data from each of the three AWS buckets containing this data (one per device) into a folder named "SubjectData", which contains the same data structure as provided by the device company through their AWS buckets, with a sub-folder per device:
+The data recorded by each of the three devices exists on the device company server and is organized by username (assigned to each participant by the research assisstant when onboarding). Our code begins with download/synchronization of data from each of the three AWS buckets containing this data (one per device) into a folder named "SubjectData", which contains the same data structure as provided by the device company through their AWS buckets, with a sub-folder per device type:
 ![raw_data](https://github.com/Micha098/Simons-sleep-DM/assets/107123518/f5e32b5b-4adb-49d3-b4e1-d3144f1d0464)
 
 ## Target Project Data Structure for data sharing
