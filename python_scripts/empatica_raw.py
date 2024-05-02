@@ -18,61 +18,40 @@ import seaborn as sns
 import datetime
 from sklearn import preprocessing
 import cProfile
-from Empatica_rawdata_acc import acc_raw_data
-from Empatica_rawdata_bvp import bvp_raw_data
-from Empatica_rawdata_temp import temp_raw_data
-from Empatica_rawdata_eda import eda_raw_data
-from Empatica_rawdata_gyro import gyro_raw_data
-
-
-i = int(sys.argv[1]) 
+import time as timer
 
 
 
+command = [
+    'sbatch', '/mnt/home/mhacohen/slurm_files/slurm_raw_acc.sh',
+]
+subprocess.run(command)
 
-try:
-    bvp_raw_data(i)
+timer.sleep(120 * 60)  # 60 minutes * 60 seconds
 
-    print(i)
+command = [
+    'sbatch', '/mnt/home/mhacohen/slurm_files/slurm_raw_bvp.sh',
+]
+subprocess.run(command)
 
-except Exception as e:
-    print(f"Error processing data for subject_id {participant_id}: {e}")
-    
-try:
-
-    eda_raw_data(i)
-
-    print(i)
-
-except Exception as e:
-    print(f"Error processing data for subject_id {participant_id}: {e}")
- 
-    
-try:
-    temp_raw_data(i)
-
-    print(i)
+timer.sleep(120 * 60)  # 60 minutes * 60 seconds
 
 
-except Exception as e:
-    print(f"Error processing data for subject_id {participant_id}: {e}")
-
-    
-try:
-    gyro_raw_data(i)
-
-    print(i)
-
-except Exception as e:
-    print(f"Error processing data for subject_id {participant_id}: {e}")
+command = [
+    'sbatch', '/mnt/home/mhacohen/slurm_files/slurm_raw_eda.sh',
+]
+subprocess.run(command)
+timer.sleep(60 * 60)  # 60 minutes * 60 seconds
 
 
-try:
-    acc_raw_data(i)
+command = [
+    'sbatch', '/mnt/home/mhacohen/slurm_files/slurm_raw_gyro.sh',
+]
+subprocess.run(command)
+timer.sleep(60 * 60)  # 60 minutes * 60 seconds
 
-    print(i)
 
-except Exception as e:
-    print(f"Error processing data for subject_id {participant_id}: {e}")
-
-sys.exit()
+command = [
+    'sbatch', '/mnt/home/mhacohen/slurm_files/slurm_raw_temp.sh',
+]
+subprocess.run(command)

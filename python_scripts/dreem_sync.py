@@ -29,10 +29,6 @@ from dreem_summ_data import summary_data_dreem
 
 # code for pulling the data from aws
 
-os.environ['ACCESS_URL'] = 
-os.environ['LOCAL_PATH'] = 
-os.environ['AWS_ACCESS_KEY_ID'] =
-os.environ['AWS_SECRET_ACCESS_KEY'] =
 
 #aws configure AWS Access Key ID [None]: AWS_ACCESS_KEY_ID AWS Secret Access Key [None]: AWS_SECRET_ACCESS_KEY
 
@@ -50,7 +46,7 @@ output_dir = "/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/raw_data/harmoniz
 summary_dir = "dreem_reports/"
 
 
-#Create list of unique cases
+# Create list of unique cases
 
 dreem_allocation()
 

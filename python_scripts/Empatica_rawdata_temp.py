@@ -25,6 +25,41 @@ from sklearn.neural_network import MLPRegressor
 from sklearn.metrics import mean_squared_error, r2_score
 from scipy.stats import mode
 
+i = int(sys.argv[1])
+
+data_check = pd.read_csv('/mnt/home/mhacohen/Participants and devices - embrace data check.csv')[['User ID','Starting date','End Date']]
+
+df_id = pd.read_csv('/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/subjects_ids.csv').drop_duplicates()
+
+df_id.drop_duplicates().sort_values('id', inplace = True)
+
+
+data_check = data_check.dropna(subset=['Starting date', 'End Date'], how='all')
+
+
+data_check.loc[data_check['End Date'].isna(), 'End Date'] = dt.date.today()
+data_check['Starting date'] = pd.to_datetime(data_check['Starting date'])
+data_check['End Date'] = pd.to_datetime(data_check['End Date'], errors='coerce')
+
+data_check.dropna(subset=['Starting date', 'End Date'], inplace=True)
+
+def get_date_range(row):
+    return pd.date_range(start=row['Starting date'], end=row['End Date']).date.tolist()
+
+# Apply the function across the DataFrame
+data_check['dates'] = data_check.apply(get_date_range, axis=1)
+data_check['dates'] = data_check['dates'].apply(
+    lambda x: [date.strftime('%Y-%m-%d') for date in x])
+
+data_check.sort_values('User ID', inplace=True)
+data_check.reset_index(inplace = True, drop = True)
+data_check['User ID'] = pd.to_numeric(data_check['User ID'].str.replace('U', '', regex=True))
+data_check = data_check.merge(df_id.rename(columns = {'id':'User ID'}), on = 'User ID', how = 'right')
+
+subject_id = data_check['User ID'].tolist()
+tzs_str = data_check['tz_str'].tolist()
+data_check.dropna(subset=['dates'], inplace=True)
+
 # Function to process and save data for adjusted tz
 def process_and_save_adjusted_days(subject_id,tzs_str,output_folder,shared_data_folder,file1, file2=None):
     df1 = pd.read_csv(file1).rename(columns = {'timestamp':'time'})
@@ -49,7 +84,7 @@ def process_and_save_adjusted_days(subject_id,tzs_str,output_folder,shared_data_
     df_combined['day'] = df_combined['date'].dt.date
 
     for datei in df_combined['day'].unique():
-        new_filename = f'{output_folder}/empatica_temp_{subject_id}_{datei}.csv'
+        new_filename = f'empatica_temp_{subject_id}_{datei}.csv'
         df_combined[df_combined['day'] == datei].to_csv(os.path.join(output_folder, new_filename), index=False)
         df_combined[df_combined['day'] == datei].to_csv(os.path.join(shared_data_folder, new_filename), index=False)
 
@@ -67,18 +102,36 @@ def temp_raw_data(i):
     shared_data_folder = f'/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/data_share/{subject_id[i]}/empatica/raw_data/temperature/' #output folder
 
 
+#     if os.path.isdir(tz_temp):
+#         shutil.rmtree(tz_temp)
+
+#     shutil.rmtree(output_folder)
+#     shutil.rmtree(shared_data_folder)
+
     if not os.path.isdir(output_folder):
             os.makedirs(output_folder)
+
+    if not os.path.isdir(shared_data_folder):
+        os.makedirs(shared_data_folder)
+
     if not os.path.isdir(tz_temp):
-            os.makedirs(tz_temp)
-    # temprature data 
+            os.makedirs(tz_temp)    # temprature data 
 
     dfs = []
-    dates = sorted(os.listdir(participant_data_path), reverse=True) #all date-folders available 
-    dates.remove('.DS_Store')
-    for date in [d for d in sorted(dates) if pd.to_datetime(d).date() > pd.to_datetime('2023-10-30').date()]:# date of starting the sleep study pilot
+    dates = data_check.dates[i]
+    print(dates)
+    
+    for date in dates: 
+        try:
 
-        if True: #f'empatica_temp_{subject_id[i]}_{date}.csv' not in sorted(os.listdir(output_folder),reverse=True) or (subject_id[i] in [133,333,310,110,147,347,115,315,140,340,158,358,159,359,161,361]):
+
+            if (f'empatica_temp_{subject_id[i]}_{date}.csv') in sorted(os.listdir(tz_temp),reverse=True):         
+                print('file already processed')
+                continue
+
+            # elif (f'empatica_temp_{subject_id[i]}_{date}.csv') not in sorted(os.listdir(tz_temp),reverse=True) and ((f'empatica_temp_{subject_id[i]}_{date}.csv') not in sorted(os.listdir(output_folder),reverse=True)):   
+
+
             date_folder = os.path.join(participant_data_path+date) # list folders (for each user) within the date-folde
             for name_folder in os.listdir(date_folder):
                 if (f'{subject_id[i]}-') in name_folder:
@@ -118,23 +171,26 @@ def temp_raw_data(i):
                                 print(f'Data for {date} saved.')
                                 dfs =[]
                                 print(f'{date}')
+        except Exception as e:
+            print(e)
+            continue
 
 
-        else:
-            print('file already exists')
 
 
-
-    day_files = sorted([f for f in os.listdir(tz_temp) if f.startswith('empatica_temp_') and f.endswith('.csv')])
+    day_files = sorted([f for f in os.listdir(tz_temp) if f.startswith('empatica_acc_') and f.endswith('.csv') and f not in os.listdir(output_folder)])
+    
     if len(day_files) > 0:
 
         # Process each file, considering it and the next one for overlapping data
         for j, file in enumerate(day_files[:-1]):  # Exclude the last file for this loop
             process_and_save_adjusted_days(subject_id[i],tzs_str[i],output_folder,shared_data_folder,os.path.join(tz_temp, file), os.path.join(tz_temp, day_files[j+1]))
+    
     if len(day_files) > 0:
 
         # Process the last file separately since it has no next file to combine with
         process_and_save_adjusted_days(subject_id[i],tzs_str[i],output_folder,shared_data_folder,os.path.join(tz_temp, day_files[-1]),None)
-    shutil.rmtree(tz_temp)
+    # shutil.rmtree(tz_temp)
     print('Cleared tz_temp folder')
 
+temp_raw_data(i)

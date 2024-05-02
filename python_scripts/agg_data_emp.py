@@ -38,29 +38,73 @@ df_temp = pd.DataFrame()
 
 aggregated_data_path = None
     
-users = pd.read_csv('/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/subjects_ids.csv')['id'].tolist()
-tzs = pd.read_csv('/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/subjects_ids.csv')['tz'].tolist()
-tzs_str = pd.read_csv('/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/subjects_ids.csv')['tz_str'].tolist()
+# users = pd.read_csv('/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/subjects_ids.csv')['id'].tolist()
+# tzs = pd.read_csv('/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/subjects_ids.csv')['tz'].tolist()
+# tzs_str = pd.read_csv('/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/subjects_ids.csv')['tz_str'].tolist()
 
-user = users[i]
-tz = tzs[i]
-tz_str = tzs_str[i]
+# user = users[i]
+# tz = tzs[i]
+# tz_str = tzs_str[i]
 
 
 measure = ['pulse-rate', 'prv','activity-counts', 'sleep','step','respiratory','wearing-detection']
 participant_data_path = '/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/empatica/aws_data/1/1/participant_data/'
 
-files = [f for f in os.listdir(participant_data_path) if (f.startswith(r'202'))]
-for fb in files:
 
-    date = re.search(r"\d{4}-\d{2}-\d{2}", fb).group()
-    date = dt.datetime.strptime(date, '%Y-%m-%d')
-    date = date.strftime("%Y-%m-%d")
-    dates.append(date)
+# files = [f for f in os.listdir(participant_data_path) if (f.startswith(r'202'))]
+# for fb in files:
 
-for d in sorted(dates):
+#     date = re.search(r"\d{4}-\d{2}-\d{2}", fb).group()
+#     date = dt.datetime.strptime(date, '%Y-%m-%d')
+#     date = date.strftime("%Y-%m-%d")
+#     dates.append(date)
+
+data_check = pd.read_csv('/mnt/home/mhacohen/Participants and devices - embrace data check.csv')[['User ID','Starting date','End Date']]
+
+df_id = pd.read_csv('/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/subjects_ids.csv').drop_duplicates()
+
+df_id.drop_duplicates().sort_values('id', inplace = True)
+
+
+data_check = data_check.dropna(subset=['Starting date', 'End Date'], how='all')
+
+
+data_check.loc[data_check['End Date'].isna(), 'End Date'] = dt.date.today()
+data_check['Starting date'] = pd.to_datetime(data_check['Starting date'])
+data_check['End Date'] = pd.to_datetime(data_check['End Date'], errors='coerce')
+
+data_check.dropna(subset=['Starting date', 'End Date'], inplace=True)
+
+def get_date_range(row):
+    return pd.date_range(start=row['Starting date'], end=row['End Date']).date.tolist()
+
+# Apply the function across the DataFrame
+data_check['dates'] = data_check.apply(get_date_range, axis=1)
+data_check['dates'] = data_check['dates'].apply(
+    lambda x: [date.strftime('%Y-%m-%d') for date in x])
+
+data_check.sort_values('User ID', inplace=True)
+data_check.reset_index(inplace = True, drop = True)
+data_check['User ID'] = pd.to_numeric(data_check['User ID'].str.replace('U', '', regex=True))
+data_check = data_check.merge(df_id.rename(columns = {'id':'User ID'}), on = 'User ID', how = 'right')
+
+subject_id = data_check['User ID'].tolist()
+tzs_str = data_check['tz_str'].tolist()
+data_check.dropna(subset=['dates'], inplace=True)
+
+user = subject_id[i]
+tz_str = tzs_str[i]
+
+dates = data_check.dates[i]
+print(dates)
+    
+for d in dates:
+    print(d)
     for foldername in os.listdir(os.path.join(participant_data_path,d)):
-        if f'U{user}' in foldername:
+        print(foldername)
+
+        if f'{user}-' in foldername:
+            print(foldername)
             try:
                 aggregated_data_path= glob.glob(f'{participant_data_path}/{d}/*U{user}*/digital_biomarkers/aggregated_per_minute/')[0]
                 print(foldername)
@@ -137,6 +181,13 @@ if d == sorted(dates)[-1] and not agg_emp_all.empty:
 
     target_path = f'/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/raw_data/harmonized_data/{user}/empatica_measures'
     target_path_share = f'/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/data_share/{user}/empatica/summarized_data'
+
+    
+    if os.path.isdir(target_path):
+        shutil.rmtree(target_path)
+
+    shutil.rmtree(target_path_share)
+
 
     if not os.path.isdir(target_path) or not os.path.isdir(target_path_share):
         os.makedirs(target_path,exist_ok=True)
