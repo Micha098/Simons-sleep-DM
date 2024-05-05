@@ -1,0 +1,3 @@
+[submodule "simons-sleep-ai"]
+	path = simons-sleep-ai
+	url = https://github.com/Dinstein-Lab/simons-sleep-ai.git
