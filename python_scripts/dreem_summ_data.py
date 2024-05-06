@@ -44,15 +44,14 @@ def summary_data_dreem(subject_id,tz_str,data_path):
 
             df_sleep_all = pd.concat([df_sleep_all,df_sleep])
 
-    df_sleep_all['start_rec'] = pd.to_datetime(df_sleep_all['REC_DATE_TIME'])
+    df_sleep_all['start_rec'] = pd.to_datetime(df_sleep_all['REC_DATE_TIME'], utc=True)
     df_sleep_all.drop('REC_DATE_TIME', axis=1,inplace= True)
-
     target_timezone = pytz.timezone(tz_str) 
     df_sleep_all['start_rec'] = df_sleep_all['start_rec'].apply(lambda x: x.tz_convert(target_timezone))
 
 
     df_sleep_all['TIB'] = df_sleep_all['TRT']/60
-    df_sleep_all = df_sleep_all[df_sleep_all['TST'] >=180] # clear nights shorter then 3 hours
+    df_sleep_all = df_sleep_all[df_sleep_all['TST'] >=180]
     df_sleep_all['SO'] = df_sleep_all['start_rec'] + pd.to_timedelta(df_sleep_all['SOL'], unit='m')
     df_sleep_all['FA'] = df_sleep_all['start_rec'] + pd.to_timedelta(df_sleep_all['TST'], unit='m') + pd.to_timedelta(df_sleep_all['WASO'], unit='m')
     df_sleep_all['date'] = pd.to_datetime(df_sleep_all['start_rec']).dt.date

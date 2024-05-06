@@ -137,11 +137,11 @@ def eda_raw_data(i):
     #             else:
 
             date_folder = os.path.join(participant_data_path+date) # list folders (for each user) within the date-folde
-            print(f'folder  {date_folder}')
             for name_folder in os.listdir(date_folder):
                 if (f'{subject_id[i]}-') in name_folder:
                     subfolder = os.path.join(date_folder, name_folder, 'raw_data', 'v6')
                     if  subfolder != []:
+                        print(f'folder  {date}')
                         if os.path.isdir(subfolder):
                             files = os.listdir(subfolder) #list of avro files
                             files = np.sort(files).tolist() # rearrange files in a chronological manner

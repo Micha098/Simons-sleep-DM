@@ -29,7 +29,6 @@ from dreem_summ_data import summary_data_dreem
 
 # code for pulling the data from aws
 
-
 #aws configure AWS Access Key ID [None]: AWS_ACCESS_KEY_ID AWS Secret Access Key [None]: AWS_SECRET_ACCESS_KEY
 
 sync_command = f"aws s3 sync {os.environ['ACCESS_URL']} {os.environ['LOCAL_PATH']} --region us-east-1"

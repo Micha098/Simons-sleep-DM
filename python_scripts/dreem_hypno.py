@@ -31,7 +31,7 @@ from utilities import project_data_dir
 from eeg_sleep import EEGSleep
 import argparse
 import mne
-
+import shutil
 
 def get_dreem_hypno(subject_id, directory):
     
@@ -160,6 +160,10 @@ if not os.path.isdir(output_folder2):
 #check folder
 os.chdir(directory)
 
+# remove old processed files 
+for file in directory:
+    if file.startswith('dreem_'):
+        so.remove(os.path.join(directory,file))
 
 date_list=[]
 date = None
@@ -236,10 +240,13 @@ if len (os.listdir(directory)) > 0:
                             df = df[reorder]
 
                             os.remove(directory+filename) # delete the old foramt files
-
+                            
+                            new_filename =  f"dreem_{subject_id[j]}_{date}.csv"
                             #df.to_csv(f'{output_folder}/dreem_{subject_id[j]}_{date}.txt', sep='\t')
-                            df.to_csv(f'{output_folder}/dreem_{subject_id[j]}_{date}.csv', index=False)
-                            df.to_csv(f'{output_folder2}/dreem_{subject_id[j]}_{date}.csv', index=False)
+                            if new_filename in os.listdir(output_folder):
+                                    print('oh no, duplicated file!')
+                            df.to_csv(so.path.join(output_folder,new_filename), index=False)
+                            df.to_csv(so.path.join(output_folder2,new_filename), index=False)
             
             except Exception as e:
                 print(f'{subject_id[j]} {e}')
