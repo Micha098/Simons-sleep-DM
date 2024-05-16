@@ -31,6 +31,7 @@ import argparse
 from dateutil import parser as dt_parser  # Aliased to avoid conflicts
 import mne
 import pytz
+import shutil
 
 j = int(sys.argv[1])
 
@@ -38,7 +39,7 @@ subject_id = pd.read_csv('/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/subje
 tzs_str = pd.read_csv('/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/subjects_ids.csv')['tz_str'].tolist()
 
 input_folder = f'/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/raw_data/harmonized_data/{subject_id[j]}/'
-output_folder2 = f'/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/share_data/{subject_id[j]}/dreem/'
+output_folder2 = f'/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/data_share/{subject_id[j]}/dreem/'
 output_folder = f'/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/raw_data/harmonized_data/{subject_id[j]}/'
 
 date_list = [re.search(r'\d{4}-\d{2}-\d{2}', file).group() for file in os.listdir(output_folder) if file.endswith(".edf") and not file.startswith("eeg") ]
@@ -59,10 +60,10 @@ fft_dir = output_folder + '/fft/'
 noise_dir = output_folder + '/noise/'
 
 # Check and create directories if they don't exist
-for directory in [edf_in,edf_out, csv_dir, fft_dir, noise_dir]:
+for directory in [edf_in,edf_out,edf_out2, csv_dir, fft_dir, noise_dir]:
     if not os.path.isdir(directory):
         os.makedirs(directory)
-
+        
 # # Get list of EDF files in the directory
 path_edfs = sorted([file for file in os.listdir(edf_in) if file.endswith(".edf") and not file.startswith("eeg") ],reverse=True)
 path_edf = None  # Initialize path_edf outside the loop
@@ -118,7 +119,7 @@ for pathi in path_edfs:
             path_edf = os.path.join(edf_in, path_edf)
             # Check the size of the file
             file_size = os.path.getsize(path_edf)  # Get file size in bytes
-            size_limit = 20 * 1024 * 1024  # 20MB in bytes
+            size_limit = 10 * 1024 * 1024  # 10MB in bytes ~ 1 hour of recording
 
             if file_size < size_limit:
                 print(f"File {path_edf} is smaller than 20MB and will be deleted.")
@@ -183,12 +184,13 @@ for pathi in path_edfs:
             np.save(f'{fft_dir}/so_{subject_id[j]}_{file_date}.npy', [so_algo, wu_algo])
             np.save(f'{fft_dir}/local_minima_{subject_id[j]}_{file_date}.npy', local_minima)
             # Save EEG data in EDF format
-            os.rename(path_edf, new_edf_path2)
+            os.rename(path_edf, new_edf_path)
+
+            shutil.copy(new_edf_path, new_edf_path2)
 
             print(f'saved files {subject_id[j]}_{file_date}')
         except Exception as e:
             print(f"Error processing data for subject_id {pathi}: {e}")
-            os.rename(path_edf, new_edf_path)
 
             continue
 

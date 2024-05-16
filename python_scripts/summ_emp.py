@@ -102,8 +102,9 @@ for filename in sorted(os.listdir(directory)):
             if so_index is not None:
                 # Look for FA starting from the end of the detected SO.
                 # Find 2 hours of consecutive wakefullness
-                for i in range(so_index + 10, len(df) - 120):
-                    if all(df.iloc[i:i+120]['sleep_stage_fixed'].isin([102, 300, 0,None])):
+                for i in range(so_index + 10, so_index+(60*14)):
+                    if all(df.iloc[i:i+120]['sleep_stage_fixed'].isin([102, 300, 0,np.nan])):
+                        print(f'{i}-fa')
                         # Iterate backwards to find the last 10 consecutive sleep epochs
                         for j in range(i - 1, so_index + 9, -1):
                             if all(df.iloc[j-9:j+1]['sleep_stage_fixed'] == 101):
@@ -113,28 +114,31 @@ for filename in sorted(os.listdir(directory)):
                             fa_index = i
                         break
 
+
                 if fa_index is not None:
                     tst = (df.loc[so_index:fa_index, 'sleep_stage_fixed'] == 101).sum()
-                    waso = df.loc[so_index:fa_index, 'sleep_stage_fixed'].isin([102, 300, 0]).sum()
+                    waso = df.loc[so_index:fa_index, 'sleep_stage_fixed'].isin([102, 300, 0,np.nan]).sum()
 
-                    if fa_index - so_index > 180 and (waso/tst < 0.5 if tst != 0 else False): # check for short or fregmented sleep periods
+                    if (fa_index - so_index - waso) > 180: # check for short or fregmented sleep periods
                         SO.append(df['timestamp_iso'].iloc[so_index])
                         FA.append(df['timestamp_iso'].iloc[fa_index])
                         TST.append(tst)
                         WASO.append(waso)
                         results.append({'TST': tst, 'WASO': waso, 'SO': SO[-1], 'FA': FA[-1]})
                         print(f'TST: {tst}, WASO: {waso} SO: {SO[-1]}, FA: {FA[-1]}')
-
                     # Update start_index to the index right after the current FA for the next cycle
                     start_index = fa_index + 1
                 else:
-                    # If no FA found, break out of the loop
-                    break
+                    # If no FA found, continue searching from 12h later
+                    start_index = start_index + 60*12
+                    print('artificaly added fa')
+                
             else:
                 # If no SO found, break out of the loop
                 break
 
 sleep_measures_per_night = pd.DataFrame(results)
+
 if 'FA' in sleep_measures_per_night.columns:
 
     sleep_measures_per_night['FA'] = pd.to_datetime(sleep_measures_per_night['FA'])
@@ -146,10 +150,10 @@ if 'FA' in sleep_measures_per_night.columns:
 
 try:
     os.makedirs(output_dir, exist_ok=True)
-    os.remove(f'{output_dir}/empatica_nights_summary_101{user}.csv')
-    os.remove(f'{output_dir}/empatica_nights_summary_101{user}.csv')
 
 except:
     print('no file to remove')
+
 sleep_measures_per_night.to_csv(f'{output_dir}empatica_nights_summary_{user}.csv')
 print(f'completed user {user}')
+# sleep_measures_per_night
