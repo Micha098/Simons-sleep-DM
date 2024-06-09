@@ -28,6 +28,7 @@ import subprocess
 import warnings
 warnings.filterwarnings("ignore")
 import ast
+import shutil
 
 
 dates = []
@@ -51,15 +52,10 @@ measure = ['pulse-rate', 'prv','activity-counts', 'sleep','step','respiratory','
 participant_data_path = '/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/empatica/aws_data/1/1/participant_data/'
 
 
-# files = [f for f in os.listdir(participant_data_path) if (f.startswith(r'202'))]
-# for fb in files:
-
-#     date = re.search(r"\d{4}-\d{2}-\d{2}", fb).group()
-#     date = dt.datetime.strptime(date, '%Y-%m-%d')
-#     date = date.strftime("%Y-%m-%d")
-#     dates.append(date)
 
 data_check = pd.read_csv('/mnt/home/mhacohen/Participants and devices - embrace data check.csv')[['User ID','Starting date','End Date']]
+
+data_check.sort_values('Starting date', inplace = True)
 
 df_id = pd.read_csv('/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/subjects_ids.csv').drop_duplicates()
 
@@ -87,15 +83,17 @@ data_check.sort_values('User ID', inplace=True)
 data_check.reset_index(inplace = True, drop = True)
 data_check['User ID'] = pd.to_numeric(data_check['User ID'].str.replace('U', '', regex=True))
 data_check = data_check.merge(df_id.rename(columns = {'id':'User ID'}), on = 'User ID', how = 'right')
+data_check.dropna(subset=['dates'], inplace=True)
 
 subject_id = data_check['User ID'].tolist()
 tzs_str = data_check['tz_str'].tolist()
-data_check.dropna(subset=['dates'], inplace=True)
+dates = data_check['dates'].tolist()
 
 user = subject_id[i]
 tz_str = tzs_str[i]
 
-dates = data_check.dates[i]
+dates = dates[i]
+
 print(dates)
     
 for d in dates:
@@ -185,6 +183,11 @@ if d == sorted(dates)[-1] and not agg_emp_all.empty:
     
     if os.path.isdir(target_path):
         shutil.rmtree(target_path)
+   
+    if not os.path.isdir(target_path) or not os.path.isdir(target_path_share):
+        os.makedirs(target_path,exist_ok=True)
+        os.makedirs(target_path_share,exist_ok=True)
+
 
     shutil.rmtree(target_path_share)
 
@@ -215,7 +218,7 @@ if not agg_emp_all.empty and 'timestamp_iso' in agg_emp_all.columns:
         agg_daily = agg_emp_all[agg_emp_all.timestamp_iso.dt.date == datei]
 
         agg_daily.to_csv(os.path.join(target_path,new_filename), index =False)
-
+        
         agg_daily.to_csv(os.path.join(target_path_share,new_filename), index =False)
 
     #agg_emp_all = pd.concat([agg_emp_all,pd.read_csv('/mnt/home/mhacohen/ceph/agg_emp_all.csv').reset_index(drop=True)])

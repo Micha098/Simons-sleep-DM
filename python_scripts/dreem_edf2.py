@@ -58,9 +58,10 @@ edf_out2 = output_folder2 + '/edf/'
 csv_dir = output_folder + '/hypno/'
 fft_dir = output_folder + '/fft/'
 noise_dir = output_folder + '/noise/'
+yasa_dir = output_folder + '/hypno/yasa/'
 
 # Check and create directories if they don't exist
-for directory in [edf_in,edf_out,edf_out2, csv_dir, fft_dir, noise_dir]:
+for directory in [edf_in,edf_out,edf_out2, csv_dir, fft_dir, noise_dir,yasa_dir]:
     if not os.path.isdir(directory):
         os.makedirs(directory)
         
@@ -148,13 +149,15 @@ for pathi in path_edfs:
             path_stages = os.path.join(csv_dir, stagefile)
 
             eeg_sleep_instance = EEGSleep(project_name=args.project_name)
+            
 
             acc = eeg_sleep_instance.get_accelerometer(path_edf, preload=True)
 
             np.save(f'{fft_dir}/df_acc_{subject_id[j]}_{file_date}.npy', acc.get_data())
 
-            epochs, _ = eeg_sleep_instance.preprocess_eeg_data(path_edf, path_stages, preload=True, l_freq=0.75, h_freq=20)
+            epochs, croppedData = eeg_sleep_instance.preprocess_eeg_data(path_edf, path_stages, preload=True, l_freq=0.75, h_freq=20)
 
+            df_yasa = eeg_sleep_instance.compute_Alg_stages(croppedData)
 
             delta_mark_all, theta_mark_all, alpha_mark_all, beta_mark_all, kurt_mark_all, var_mark_all, mob_mark_all, comp_mark_all, amp_mark_all, diff_mark_all,maxk_amp_all, fftWelch, ch_names = eeg_sleep_instance.compute_noise_matrices(epochs, epochs.info,sd_crt = 2)
 
@@ -168,6 +171,8 @@ for pathi in path_edfs:
             np.save(f'{fft_dir}/fft_{subject_id[j]}_{file_date}.npy', fftWelch)
 
             pd.DataFrame(rejected_epochs).to_csv(f'{noise_dir}/noise_{subject_id[j]}_{file_date}.csv')
+            
+            df_yasa.to_csv(f'{yasa_dir}/yasa_{subject_id[j]}_{file_date}.csv')
 
             rejected_epochs = pd.read_csv(os.path.join(noise_dir,f'noise_{subject_id[j]}_{file_date}.csv'))['0']
 

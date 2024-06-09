@@ -83,11 +83,16 @@ def process_and_save_adjusted_days(subject_id,tzs_str,output_folder,shared_data_
     df_combined['date'] = df_combined['date'].dt.tz_convert(target_timezone)
     df_combined['day'] = df_combined['date'].dt.date
 
-    for datei in df_combined['day'].unique():
-        new_filename = f'empatica_temp_{subject_id}_{datei}.csv'
-        df_combined[df_combined['day'] == datei].to_csv(os.path.join(output_folder, new_filename), index=False)
-        df_combined[df_combined['day'] == datei].to_csv(os.path.join(shared_data_folder, new_filename), index=False)
+    min_date = df_combined['day'].min()  # Find the minimum date
+       
+    # Filter out the minimum day
+    filtered_df = df_combined[df_combined['day'] != min_date]
 
+    # Save each day's data other than the minimum date
+    for datei in filtered_df['day'].unique():
+        new_filename = f'empatica_temp_{subject_id}_{datei}.csv'
+        filtered_df[filtered_df['day'] == datei].to_csv(os.path.join(output_folder, new_filename), index=False)
+        filtered_df[filtered_df['day'] == datei].to_csv(os.path.join(shared_data_folder, new_filename), index=False)
         print(f'Adjusted data for {datei} saved.')
 
 def temp_raw_data(i):
@@ -96,7 +101,7 @@ def temp_raw_data(i):
 
     #define path, folders, uzaser 
     participant_data_path = '/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/empatica/aws_data/1/1/participant_data/' # path to the folder that contains folder for each date
-    tz_temp = f'/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/raw_data/harmonized_data/{subject_id[i]}/temp/tz_temp' #output folder
+    tz_temp = f'/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/raw_data/harmonized_data/{subject_id[i]}/temperature/tz_temp' #output folder
 
     output_folder = f'/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/raw_data/harmonized_data/{subject_id[i]}/temperature/' #output folder
     shared_data_folder = f'/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/data_share/{subject_id[i]}/empatica/raw_data/temperature/' #output folder
@@ -178,7 +183,7 @@ def temp_raw_data(i):
 
 
 
-    day_files = sorted([f for f in os.listdir(tz_temp) if f.startswith('empatica_acc_') and f.endswith('.csv') and f not in os.listdir(output_folder)])
+    day_files = sorted([f for f in os.listdir(tz_temp) if f.startswith('empatica_temp_') and f.endswith('.csv') and and (f not in os.listdir(output_folder))])
     
     if len(day_files) > 0:
 

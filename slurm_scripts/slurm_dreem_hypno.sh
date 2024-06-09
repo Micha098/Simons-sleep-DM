@@ -1,14 +1,14 @@
 #!/bin/bash
-#SBATCH --time 1:00:00
-#SBATCH --job-name=hypno
-#SBATCH --output=ceph/dreem_hyp_%a.out
-#SBATCH --array=0-120 # Number of tasks/subjects
-#SBATCH --mem 10GB
+#SBATCH --time 04:00:00
+#SBATCH --job-name=hypno_disBatch
+#SBATCH --output=ceph/hypno_disBatchh_job_%j.out
+#SBATCH --mem=400GB
+#SBATCH --nodes=1
+#SBATCH --ntasks=100  # Adjust based on available resources and desired concurrency
+#SBATCH --cpus-per-task=1  # Adjust if each task requires multiple CPUs
 
-# Load the necessary modules or activate the virtual environment if required
- 
-# Change to the directory containing your Python script
-cd /mnt/home/mhacohen/python_files
+module load disBatch
+TASKS_FILE="/mnt/home/mhacohen/dreem_hypno_tasks"
 
-# Call your Python script and pass the subject ID as an argument
-python dreem_hypno.py $SLURM_ARRAY_TASK_ID
+# Run disBatch with the Tasks file
+disBatch $TASKS_FILE

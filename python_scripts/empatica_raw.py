@@ -19,7 +19,7 @@ import datetime
 from sklearn import preprocessing
 import cProfile
 import time as timer
-
+import shutil
 
 
 command = [
@@ -44,11 +44,11 @@ subprocess.run(command)
 timer.sleep(60 * 60)  # 60 minutes * 60 seconds
 
 
-command = [
-    'sbatch', '/mnt/home/mhacohen/slurm_files/slurm_raw_gyro.sh',
-]
-subprocess.run(command)
-timer.sleep(60 * 60)  # 60 minutes * 60 seconds
+# command = [
+#     'sbatch', '/mnt/home/mhacohen/slurm_files/slurm_raw_gyro.sh',
+# ]
+# subprocess.run(command)
+# timer.sleep(60 * 60)  # 60 minutes * 60 seconds
 
 
 command = [

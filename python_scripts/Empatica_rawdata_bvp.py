@@ -83,10 +83,17 @@ def process_and_save_adjusted_days(subject_id,tzs_str,output_folder,shared_data_
     df_combined['date'] = df_combined['date'].dt.tz_convert(target_timezone)
     df_combined['day'] = df_combined['date'].dt.date
 
-    for datei in df_combined['day'].unique():
+    min_date = df_combined['day'].min()  # Find the minimum date
+       
+    # Filter out the minimum day
+    filtered_df = df_combined[df_combined['day'] != min_date]
+
+    # Save each day's data other than the minimum date
+    for datei in filtered_df['day'].unique():
         new_filename = f'empatica_bvp_{subject_id}_{datei}.csv'
-        df_combined[df_combined['day'] == datei].to_csv(os.path.join(output_folder, new_filename), index=False)
-        df_combined[df_combined['day'] == datei].to_csv(os.path.join(shared_data_folder, new_filename), index=False)
+        filtered_df[filtered_df['day'] == datei].to_csv(os.path.join(output_folder, new_filename), index=False)
+        filtered_df[filtered_df['day'] == datei].to_csv(os.path.join(shared_data_folder, new_filename), index=False)
+        print(f'Adjusted data for {datei} saved.')
 
         print(f'Adjusted data for {datei} saved.')
 
@@ -177,7 +184,7 @@ def bvp_raw_data(i):
             continue
 
 
-    day_files = sorted([f for f in os.listdir(tz_temp) if f.startswith('empatica_acc_') and f.endswith('.csv') and f not in os.listdir(output_folder)])
+    day_files = sorted([f for f in os.listdir(tz_temp) if f.startswith('empatica_bvp_') and f.endswith('.csv') and (f not in os.listdir(output_folder))])
     
     if len(day_files) > 0:
 

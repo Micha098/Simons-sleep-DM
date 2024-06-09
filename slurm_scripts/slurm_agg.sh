@@ -1,15 +1,14 @@
 #!/bin/bash
-#SBATCH --time 1:00:00
-#SBATCH --job-name=aggregated_data
-#SBATCH --output=ceph/agg_%a.out
-#SBATCH --array=0-120# Number of tasks/subjects
-#SBATCH --mem 400GB
+#SBATCH --time 04:00:00
+#SBATCH --job-name=agg_emp_disBatch
+#SBATCH --output=ceph/agg_emp_disBatch_job_%j.out
+#SBATCH --mem=400GB
+#SBATCH --nodes=1
+#SBATCH --ntasks=20  # Adjust based on available resources and desired concurrency
+#SBATCH --cpus-per-task=1  # Adjust if each task requires multiple CPUs
 
-# Load the necessary modules or activate the virtual environment if required
-source slurm_files/init_conda.sh
+module load disBatch
+TASKS_FILE="/mnt/home/mhacohen/aggEmp_tasks"
 
-
-# Change to the directory containing your Python script
-cd /mnt/home/mhacohen/python_files/
-
-python agg_data_emp.py $SLURM_ARRAY_TASK_ID
+# Run disBatch with the Tasks file
+disBatch $TASKS_FILE

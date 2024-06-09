@@ -64,7 +64,6 @@ def process_and_save_adjusted_days(subject_id,tz_str,output_folder,shared_data_f
     
     df_combined.drop_duplicates(subset='time', keep='first', inplace=True)
 
-    #df_combined['date'] = pd.to_datetime(df_combined['time'], unit='s').dt.tz_localize(None)
     df_combined['date'] = pd.to_datetime(df_combined['time'], unit='s').dt.tz_localize('UTC')
 
     target_timezone = pytz.timezone(tz_str) 
@@ -74,13 +73,16 @@ def process_and_save_adjusted_days(subject_id,tz_str,output_folder,shared_data_f
     df_combined['date'] = df_combined['date'].dt.tz_convert(target_timezone)
     df_combined['day'] = df_combined['date'].dt.date
 
-    for datei in df_combined['day'].unique():
+    min_date = df_combined['day'].min()  # Find the minimum date
+       
+    # Filter out the minimum day
+    filtered_df = df_combined[df_combined['day'] != min_date]
+
+    # Save each day's data other than the minimum date
+    for datei in filtered_df['day'].unique():
         new_filename = f'empatica_acc_{subject_id}_{datei}.csv'
-
-        df_combined[df_combined.day == datei].to_csv(os.path.join(output_folder, new_filename), index=False)
-        # sent to share data path
-        df_combined[df_combined.day == datei].to_csv(os.path.join(shared_data_folder, new_filename), index=False)
-
+        filtered_df[filtered_df['day'] == datei].to_csv(os.path.join(output_folder, new_filename), index=False)
+        filtered_df[filtered_df['day'] == datei].to_csv(os.path.join(shared_data_folder, new_filename), index=False)
         print(f'Adjusted data for {datei} saved.')
 
 def acc_raw_data(i):
@@ -130,7 +132,7 @@ def acc_raw_data(i):
         # elif (f'empatica_acc_{subject_id[i]}_{date}.csv') not in sorted(os.listdir(tz_temp),reverse=True) and ((f'empatica_acc_{subject_id[i]}_{date}.csv') not in sorted(os.listdir(output_folder),reverse=True)):       
 
             date_folder = os.path.join(participant_data_path+date) # list folders (for each user) within the date-folde
-            for name_folder in os.listdir(date_folder):
+            for name_folder in sorted(os.listdir(date_folder)):
                 if (f'{subject_id[i]}-') in name_folder:
                     subfolder = os.path.join(date_folder, name_folder, 'raw_data', 'v6')
                     if  subfolder != []:
@@ -144,34 +146,28 @@ def acc_raw_data(i):
                                 schema = json.loads(reader.meta.get('avro.schema').decode('utf-8'))
                                 data = []
                                 for datum in reader:
-                                    data = datum
-                                reader.close()
+                                    acc = datum["rawData"]["accelerometer"]  # access specific metric
+                                    startSeconds = acc["timestampStart"] / 1000000  # convert timestamp to seconds
+                                    timeSeconds = list(range(0, len(acc['x'])))
+                                    if acc["samplingFrequency"] == 0:
+                                        acc["samplingFrequency"] = 64
+                                    timeUNIX = [t / acc["samplingFrequency"] + startSeconds for t in timeSeconds]
+                                    delta_physical = acc["imuParams"]["physicalMax"] - acc["imuParams"]["physicalMin"]
+                                    delta_digital = acc["imuParams"]["digitalMax"] - acc["imuParams"]["digitalMin"]
+                                    acc['x'] = [val * delta_physical / delta_digital for val in acc["x"]]
+                                    acc['y'] = [val * delta_physical / delta_digital for val in acc["y"]]
+                                    acc['z'] = [val * delta_physical / delta_digital for val in acc["z"]]
 
-                                acc = data["rawData"]["accelerometer"] #access specific metric 
-                                startSeconds = acc["timestampStart"] / 1000000 # convert timestamp to seconds
-                                timeSeconds = list(range(0,len(acc['x'])))
-                                if acc["samplingFrequency"] == 0:
-                                    acc["samplingFrequency"] = 64;
-                                timeUNIX = [t/acc["samplingFrequency"]+startSeconds for t in timeSeconds]
-                                delta_physical = acc["imuParams"]["physicalMax"] - acc["imuParams"]["physicalMin"]
-                                delta_digital = acc["imuParams"]["digitalMax"] - acc["imuParams"]["digitalMin"]
-                                acc['x'] = [val*delta_physical/delta_digital for val in acc["x"]]
-                                acc['y'] = [val*delta_physical/delta_digital for val in acc["y"]]
-                                acc['z'] = [val*delta_physical/delta_digital for val in acc["z"]]
-
-                                df_acTot = pd.DataFrame({'time': timeUNIX, 'x': acc['x'], 'y': acc['y'], 'z': acc['z']})
-
-                                if not df_acTot.empty:
+                                    df_acTot = pd.DataFrame({'time': timeUNIX, 'x': acc['x'], 'y': acc['y'], 'z': acc['z']})
                                     dfs.append(df_acTot)
 
                             if dfs:
-
                                 daily_df = pd.concat(dfs, ignore_index=True)
                                 daily_filename = f'{tz_temp}/empatica_acc_{subject_id[i]}_{date}.csv'
                                 daily_df.to_csv(daily_filename)
 
                                 print(f'Data for {date} saved.')
-                                dfs =[]
+                                dfs = []
 
         except Exception as e:
             print(e)
@@ -183,13 +179,14 @@ def acc_raw_data(i):
 
           # Process each file, considering it and the next one for overlapping data
         for j, file in enumerate(day_files[:-1]):  # Exclude the last file for this loop
-            process_and_save_adjusted_days(subject_id[i],tzs_str[i],output_folder,shared_data_folder,os.path.join(tz_temp, file), os.path.join(tz_temp, day_files[j+1]))
             
+            process_and_save_adjusted_days(subject_id[i],tzs_str[i],output_folder,shared_data_folder,os.path.join(tz_temp, file), os.path.join(tz_temp, day_files[j+1]))
+
     if len(day_files) > 0:
 
         # Process the last file separately since it has no next file to combine with
         process_and_save_adjusted_days(subject_id[i],tzs_str[i],output_folder,shared_data_folder,os.path.join(tz_temp, day_files[-1]),None)
-        
+
     #shutil.rmtree(tz_temp)
     #print('Cleared tz_temp folder')
 

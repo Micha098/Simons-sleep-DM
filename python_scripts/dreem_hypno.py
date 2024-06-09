@@ -163,7 +163,7 @@ os.chdir(directory)
 # remove old processed files 
 for file in directory:
     if file.startswith('dreem_'):
-        so.remove(os.path.join(directory,file))
+        os.remove(os.path.join(directory,file))
 
 date_list=[]
 date = None
@@ -244,116 +244,10 @@ if len (os.listdir(directory)) > 0:
                             new_filename =  f"dreem_{subject_id[j]}_{date}.csv"
                             #df.to_csv(f'{output_folder}/dreem_{subject_id[j]}_{date}.txt', sep='\t')
                             if new_filename in os.listdir(output_folder):
-                                    print('oh no, duplicated file!')
-                            df.to_csv(so.path.join(output_folder,new_filename), index=False)
-                            df.to_csv(so.path.join(output_folder2,new_filename), index=False)
+                                    print(f'{new_filename}')
+                            df.to_csv(os.path.join(output_folder,new_filename), index=False)
+                            df.to_csv(os.path.join(output_folder2,new_filename), index=False)
             
             except Exception as e:
                 print(f'{subject_id[j]} {e}')
                 continue
-            
-## code for hypnogram foramting
-
-# subject_id = pd.read_csv('/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/subjects_ids.csv')['id'].tolist()
-# subject_tz = pd.read_csv('/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/subjects_ids.csv')['tz'].tolist()
-# tzs_str = pd.read_csv('/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/subjects_ids.csv')['tz_str'].tolist()
-
-# for j in range(len(subject_id)):
-#     # Convert Dreem Hypmnogram to desired format 
-
-#     directory = f'/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/raw_data/harmonized_data/{subject_id[j]}/hypno/'
-#     output_folder2 = f'/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/dreem/{subject_id[j]}/txt/csv/'
-#     output_folder =f'/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/raw_data/harmonized_data/{subject_id[j]}/hypno/csv/'
-
-#     if not os.path.isdir(directory):
-#             os.makedirs(directory)
-
-#     if not os.path.isdir(output_folder):
-#             os.makedirs(output_folder)
-
-#     if not os.path.isdir(output_folder2):
-#             os.makedirs(output_folder2)
-
-#     #check folder
-#     os.chdir(directory)
-
-
-#     date_list=[]
-#     date = None
-#     if len (os.listdir(directory)) > 0:
-
-#         for filename in os.listdir(directory):
-#             if 'hypnogram' in filename:
-#                 try:
-#                     datetime_str = filename.split('@')[1].split('.')[1]
-#                     datetime_str= datetime_str.split('_')[1]
-
-
-#                     # Parse the datetime string into a datetime object, including the timezone
-#                     if '[05-00]' in datetime_str:
-#                         print(filename)
-#                         datetime_str.replace("[05-00]", "-05:00")
-
-#                     datetime_obj = dt_parser.parse(datetime_str)
-#                     # Define the target timezone
-#                     target_tz = pytz.timezone(tzs_str[j])
-#                     utc_fix = False
-
-#                     if datetime_obj.tzinfo != target_tz:
-#                         utc_fix = True
-#                         datetime_obj = datetime_obj.astimezone(target_tz)
-#                         # print(f"Time adjusted to: {target_tz}")
-
-#                     file_time = datetime_obj.time()
-#                     file_tz = datetime_obj.tzinfo
-
-
-#                      # Check if the time adjustment crosses over to the next day
-#                     if file_time > dt.datetime.strptime('19:00:00', '%H:%M:%S').time():
-#                         datetime_obj += timedelta(days=1)  # Add one day
-
-#                     file_date = datetime_obj.date()
-
-#                     if filename.endswith("hypnogram.txt"):
-
-#                         with open(f"{directory}/{filename}") as file:
-#                             lines = file.readlines()
-#                             # Find the line with "idorer Time" and extract the date
-#                             for i, line in enumerate(lines):
-#                                 if "Scorer Time" in line:
-
-#                                     date = file_date
-#                                     time_dt = file_time
-
-#                                     date_list.append(date)
-
-#                                     new_filename = f"dreem_{subject_id[j]}_{date}.txt"
-#                                     # Delete all lines before the table
-#                                     lines = lines[(i+2):]
-#                                     break
-#                             # Write the remaining lines to a new file with the new name
-#                             if date:
-#                                 with open(f"{directory}/{new_filename}", "w") as new_file:
-#                                     new_file.writelines(lines)
-
-#                                 locals()[f'dreem_{subject_id[j]}_{date}'] = pd.read_csv(f"{directory}/{new_filename}",sep= "\t")
-#                                 df = locals()[f'dreem_{subject_id[j]}_{date}']
-
-#                                 df.replace({'SLEEP-S0':'0','SLEEP-S1':'1','SLEEP-S2':'2','SLEEP-S3':'3','SLEEP-REM':'4','SLEEP-MT':None},inplace=True)
-#                                 # df.rename(columns = {'Time [hh:mm:ss]':'time'},inplace=True)
-
-#                                 df['time'] = pd.to_datetime(date.strftime('%Y-%m-%d') + ' ' + df['Time [hh:mm:ss]'], format='%Y-%m-%d %H:%M:%S')
-#                                 df['time'] = df['time'].dt.tz_localize(file_tz.zone)
-
-
-
-#                                 os.remove(directory+filename) # delete the old foramt files
-
-#                                 df.to_csv(f'{output_folder}/dreem_{subject_id[j]}_{date}.txt', sep='\t')
-#                                 df.to_csv(f'{output_folder}/dreem_{subject_id[j]}_{date}.csv', index=False)
-#                                 df.to_csv(f'{output_folder2}/dreem_{subject_id[j]}_{date}.csv', index=False)
-
-#                 except Exception as e:
-#                     print(f'{subject_id[j]} {e}')
-#                     continue
-
