@@ -21,7 +21,7 @@ import time as timer
 
 # code for AWS data pull
 
-os.environ['LOCAL_PATH'] = "/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/empatica/aws_data/"
+os.environ['LOCAL_PATH'] = "/mnt/home/user/ceph/Sleep_study/SubjectsData/empatica/aws_data/"
 
 sync_command = f"aws s3 sync {os.environ['ACCESS_URL']} {os.environ['LOCAL_PATH']} --region us-east-1"
 subprocess.run(sync_command, shell=True)
@@ -30,7 +30,7 @@ subprocess.run(f"{sync_command} > output.txt", shell=True)
 # activate slurm for agg data
 
 command = [
-    'sbatch', '/mnt/home/mhacohen/slurm_files/slurm_agg_share.sh',
+    'sbatch', '/mnt/home/user/slurm_files/slurm_agg_share.sh',
 ]
 subprocess.run(command)
 
@@ -40,6 +40,6 @@ timer.sleep(60 * 60)  # 60 minutes * 60 seconds
 
 
 command = [
-    'python', '/mnt/home/mhacohen/python_files/empatica_raw_sahre.py',
+    'python', '/mnt/home/user/python_files/empatica_raw_sahre.py',
 ]
 subprocess.run(command)

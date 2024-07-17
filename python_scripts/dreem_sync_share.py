@@ -29,7 +29,7 @@ from dreem_allocation_share import dreem_allocation
 from dreem_summ_data import summary_data_dreem
 
 # code for pulling the data from aws
-os.environ['LOCAL_PATH'] = "/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/dreem/aws_data/"
+os.environ['LOCAL_PATH'] = "/mnt/home/user/ceph/Sleep_study/SubjectsData/dreem/aws_data/"
 
 # aws configure AWS Access Key ID [None]: AWS_ACCESS_KEY_ID AWS Secret Access Key [None]: AWS_SECRET_ACCESS_KEY
 
@@ -47,7 +47,7 @@ dreem_allocation()
 
 
 command = [
-    'python', '/mnt/home/mhacohen/python_files/dreem_hypno_share.py',
+    'python', '/mnt/home/user/python_files/dreem_hypno_share.py',
 ]
 
 subprocess.run(command)
