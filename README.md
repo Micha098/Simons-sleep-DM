@@ -47,7 +47,7 @@ The data recorded by each of the three devices exists on the device company serv
 
 The data in "SubjectData" is processed and harmonized across devices to create a new data structure that enables data sharing. This data is organized in a folder named "data_share" that contains a sub folder per participant, named according to their internal user id (SPARK RIDs), with each participant folder containing a sub folder per device with their harmonized data. Harmonized data contains data timestamps that have been adjusted to reflect the timezone the participant was in when recording, and data files are split into 24 hour periods per date. Bellow is a tree digram that demonstrates the orgnization of the data at the end of the data processing and harmonization:
 ![data_share](https://github.com/Micha098/Simons-sleep-DM/assets/107123518/ce2a49b8-7102-48ce-badb-22c47a539847)
-
+![data_share](https://github.com/Micha098/Simons-sleep-DM/blob/main/data_share%20(4).png)
 The primary code files for synching, restructuring, and processing the Dreem, Withings, and Empatica data are the dreem_sync.py, withings_synch.py, and empatica_sync.py scripts, respectively. These scripts include embedded slurm commands to download and process user data, iterating over recording dates and performing various data management tasks, such as mapping device usernames to subject ids, adjusting data timestamps to the participant's timezone, and correction of data acquisition mistakes (e.g., mistakes in the allocation of device usernames). Below is a detailed explanation of each code file per device.
 
 **Note**: A complete version of this code, which includes AWS access keys for each of the S3 buckets, can be found at `/mnt/home/mhacohen/python_files/`.
