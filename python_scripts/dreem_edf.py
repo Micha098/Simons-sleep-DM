@@ -35,11 +35,11 @@ import shutil
 
 j = int(sys.argv[1])
 
-subject_id = pd.read_csv('/mnt/home/user/ceph/Sleep_study/SubjectsData/subjects_ids.csv')['id'].tolist()
-tzs_str = pd.read_csv('/mnt/home/user/ceph/Sleep_study/SubjectsData/subjects_ids.csv')['tz_str'].tolist()
+subject_id = pd.read_csv('/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/subjects_ids.csv')['id'].tolist()
+tzs_str = pd.read_csv('/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/subjects_ids.csv')['tz_str'].tolist()
 
-input_folder = f'/mnt/home/user/ceph/Sleep_study/SubjectsData/raw_data/harmonized_data/{subject_id[j]}/'
-output_folder = f'/mnt/home/user/ceph/Sleep_study/SubjectsData/data_share/{subject_id[j]}/dreem/'
+input_folder = f'/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/raw_data/harmonized_data/{subject_id[j]}/'
+output_folder = f'/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/data_share/{subject_id[j]}/dreem/'
 
 date_list = [re.search(r'\d{4}-\d{2}-\d{2}', file).group() for file in os.listdir(output_folder) if file.endswith(".edf") and not file.startswith("eeg") ]
     
@@ -82,7 +82,7 @@ for pathi in path_edfs:
     if path_edf:
         try:
             
-            filename = path_edf
+             filename = path_edf
             
             datetime_str = filename.split('@')[1].split('.')[1]
             print(datetime_str)
@@ -94,16 +94,15 @@ for pathi in path_edfs:
             datetime_obj = dt_parser.parse(datetime_str)
             # Define the target timezone
             target_tz = pytz.timezone(tzs_str[j])
-            utc_fix = False
             
-            if datetime_obj.tzinfo != target_tz:
-                utc_fix = True
+            utc_falg = False
+        
+           if datetime_obj.tzinfo != target_tz:
                 datetime_obj = datetime_obj.astimezone(target_tz)
-                print(f"Time adjusted to: {target_tz}")
-
+                utc_flag = True
+                            
             file_time = datetime_obj.time()
             file_tz = datetime_obj.tzinfo
-            
             
              # Check if the time adjustment crosses over to the next day
             if file_time > dt.datetime.strptime('19:00:00', '%H:%M:%S').time():
@@ -125,6 +124,18 @@ for pathi in path_edfs:
                 # Proceed with loading the EDF file as it meets the size criteria
                 EEG = mne.io.read_raw_edf(path_edf, preload=True)
 
+            if utc_flag == True:
+                datetime_obj_utc = datetime_obj.astimezone(pytz.UTC)
+                datetime_obj_utc = datetime_obj_utc.replace(tzinfo=timezone.utc)
+                print(f"Time adjusted to: {datetime_obj_utc}")
+
+                EEG.set_meas_date(datetime_obj_utc)
+                # issue with expotred data - Neelay:
+                EEG.export(f'{path_edf}', fmt='edf', overwrite=True)
+                
+            
+             # Check if the time adjustment crosses over to the next day
+
             # save new edf filename 
             new_edf_filename = f"eeg_{subject_id[j]}_{file_date}.edf"
 
@@ -133,22 +144,9 @@ for pathi in path_edfs:
 
             print(f"EDF file {new_edf_path} was recorded on {file_date.strftime('%Y-%m-%d')}")
 
-            # stage file
-            stagefile = f"dreem_{subject_id[j]}_{file_date.strftime('%Y-%m-%d')}.csv"
-            if stagefile not in os.listdir(csv_dir):
-                print("Stage file not found:", stagefile)
-
-            path_stages = os.path.join(csv_dir, stagefile)
-
-            eeg_sleep_instance = EEGSleep(project_name=args.project_name)
-
-            epochs, croppedData = eeg_sleep_instance.preprocess_eeg_data(path_edf, path_stages, preload=True, l_freq=0.75, h_freq=20)
-
             # Save EEG data in EDF format
             os.rename(path_edf, new_edf_path)
-
-            shutil.copy(new_edf_path, new_edf_path)
-
+        
             print(f'saved files {subject_id[j]}_{file_date}')
         except Exception as e:
             print(f"Error processing data for subject_id {pathi}: {e}")
