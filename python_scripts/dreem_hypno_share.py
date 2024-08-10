@@ -137,9 +137,9 @@ def get_dreem_hypno(subject_id, directory):
     return df_dreem
 
 
-subject_id = pd.read_csv('/mnt/home/user/ceph/Sleep_study/SubjectsData/subjects_ids.csv')['id'].tolist()
-subject_tz = pd.read_csv('/mnt/home/user/ceph/Sleep_study/SubjectsData/subjects_ids.csv')['tz'].tolist()
-tzs_str = pd.read_csv('/mnt/home/user/ceph/Sleep_study/SubjectsData/subjects_ids.csv')['tz_str'].tolist()
+subject_id = pd.read_csv('/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/subjects_ids.csv')['id'].tolist()
+subject_tz = pd.read_csv('/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/subjects_ids.csv')['tz'].tolist()
+tzs_str = pd.read_csv('/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/subjects_ids.csv')['tz_str'].tolist()
 
 # Convert Dreem Hypmnogram to desired format 
 
@@ -147,8 +147,8 @@ tzs_str = pd.read_csv('/mnt/home/user/ceph/Sleep_study/SubjectsData/subjects_ids
 
 for j in range(len(subject_id)):
     
-    directory = f'/mnt/home/user/ceph/Sleep_study/SubjectsData/data_share/{subject_id[j]}/dreem/hypno/'
-    output_folder = f'/mnt/home/user/ceph/Sleep_study/SubjectsData/data_share/{subject_id[j]}/dreem/hypno/'
+    directory = f'/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/data_share/{subject_id[j]}/dreem/hypno/'
+    output_folder = f'/mnt/home/mhacohen/ceph/Sleep_study/SubjectsData/data_share/{subject_id[j]}/dreem/hypno/'
     
     if not os.path.isdir(directory):
             os.makedirs(directory)
@@ -181,17 +181,24 @@ for j in range(len(subject_id)):
                     if '[05-00]' in datetime_str:
                         print(filename)
                         datetime_str.replace("[05-00]", "-05:00")
-    
+                    
+                    utc_fix = False
+
                     datetime_obj = dt_parser.parse(datetime_str)
                     # Define the target timezone
                     target_tz = pytz.timezone(tzs_str[j])
-                    utc_fix = False
-    
-                    if datetime_obj.tzinfo != target_tz:
+                    
+                    file_utc_offset = datetime_obj.utcoffset().total_seconds()
+                    target_utc_offset = target_tz.utcoffset(datetime_obj.replace(tzinfo=None)).total_seconds()
+                
+                    
+                    if file_utc_offset != target_utc_offset:
                         utc_fix = True
                         datetime_obj = datetime_obj.astimezone(target_tz)
-                        # print(f"Time adjusted to: {target_tz}")
-    
+                        print(f"Time adjusted to: {target_tz}")
+                        time_difference = (target_utc_offset - file_utc_offset) / 3600.0
+                        print(f'time_difference: {time_difference}')
+
                     file_time = datetime_obj.time()
                     file_tz = datetime_obj.tzinfo
     
@@ -227,14 +234,18 @@ for j in range(len(subject_id)):
                                 locals()[f'dreem_{subject_id[j]}_{date}'] = pd.read_csv(f"{directory}/{new_filename}",sep= "\t")
                                 df = locals()[f'dreem_{subject_id[j]}_{date}']
     
-                                df.replace({'SLEEP-S0':'0','SLEEP-S1':'1','SLEEP-S2':'2','SLEEP-S3':'3','SLEEP-REM':'4','SLEEP-MT':None},inplace=True)
+                                df.replace({'SLEEP-S0':'0','SLEEP-S1':'2','SLEEP-S2':'3','SLEEP-S3':'4','SLEEP-REM':'1','SLEEP-MT':None},inplace=True)
                                 # df.rename(columns = {'Time [hh:mm:ss]':'time'},inplace=True)
     
                                 df['time'] = pd.to_datetime(date.strftime('%Y-%m-%d') + ' ' + df['Time [hh:mm:ss]'], format='%Y-%m-%d %H:%M:%S')
                 
                                 # Adjust the time for entries after 19:00
                                 df['time'] = df['time'].apply(lambda x: x - timedelta(days=1) if x.hour >= 18 else x)
-                                df['time'] = df['time'].dt.tz_localize(file_tz.zone)
+                                df['time'] = df['time'].dt.tz_localize(target_tz)
+                                
+                                if utc_fix:
+                                    # Apply the time difference to adjust the timestamps
+                                    df['time'] += timedelta(hours=time_difference)
     
                                 df.drop('Time [hh:mm:ss]', axis=1, inplace=True)
                                 

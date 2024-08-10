@@ -53,10 +53,10 @@ command = [
 subprocess.run(command)
 
 
-# timer.sleep(10 * 60)  # 60 minutes * 60 seconds
+timer.sleep(10 * 60)  # 60 minutes * 60 seconds
 
-# command = [
-#     'sbatch', '/mnt/home/mhacohen/slurm_files/slurm_dreem_edf.sh',
-# ]
-# subprocess.run(command)
+command = [
+    'sbatch', '/mnt/home/mhacohen/slurm_files/slurm_dreem_edf.sh',
+]
+subprocess.run(command)
 
