@@ -209,7 +209,7 @@ if not agg_emp_all.empty and 'timestamp_iso' in agg_emp_all.columns:
     for datei in agg_emp_all['timestamp_iso'].dt.date.unique():
 
         new_filename = f'empatica_measures_{user}_{datei}.csv'
-        agg_daily = agg_emp_all[agg_emp_all.timestamp_iso.dt.date == datei]
+        agg_daily = agg_emp_all[agg_emp_all.timestamp_iso.dt.date == datei].drop_duplicates()
 
         agg_daily.to_csv(os.path.join(target_path,new_filename), index =False)
         
